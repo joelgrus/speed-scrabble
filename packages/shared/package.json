@@ -1,0 +1,12 @@
+{
+  "name": "@ss/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}
