@@ -9,11 +9,11 @@
 - [x] Enable `"strictFunctionTypes": true` specifically
 - [x] Remove all uses of `any` type (replaced with proper `unknown` typing)
 
-### Schema/Type Alignment
-- [ ] Update `schemas.ts` to use `drawAmount` instead of `peelDraw`
-- [ ] Add Zod schemas for GameRules, TimedGameRules, BaseRules types
-- [ ] Add schema validation for all new game mode types
-- [ ] Ensure runtime validation matches TypeScript types exactly
+### Schema/Type Alignment ✅ COMPLETED
+- [x] Update `schemas.ts` to use `drawAmount` instead of `peelDraw`
+- [x] Add Zod schemas for GameRules, TimedGameRules, BaseRules types
+- [x] Add schema validation for all new game mode types
+- [x] Ensure runtime validation matches TypeScript types exactly
 
 ### Error Boundaries
 - [ ] Wrap BoardCanvas component with error boundary
