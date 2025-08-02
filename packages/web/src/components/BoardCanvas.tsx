@@ -40,7 +40,11 @@ export default function BoardCanvas() {
   const handleGridClick = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
       const stage = e.target.getStage();
+      if (!stage) return;
+      
       const point = stage.getPointerPosition();
+      if (!point) return;
+      
       // Account for stage transform
       const gridX = Math.floor(((point.x - stageX) / stageScale - originX) / CELL);
       const gridY = Math.floor(((point.y - stageY) / stageScale - originY) / CELL);
@@ -59,8 +63,11 @@ export default function BoardCanvas() {
     e.evt.preventDefault();
 
     const stage = e.target.getStage();
+    if (!stage) return;
+    
     const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
+    if (!pointer) return;
 
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,

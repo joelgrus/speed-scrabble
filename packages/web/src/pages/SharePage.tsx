@@ -160,7 +160,7 @@ export function SharePage() {
                     boxSizing: 'border-box'
                   }}
                 >
-                  {isEmpty ? '' : char}
+                  {isEmpty ? '' : String(char)}
                 </div>
               );
             })}

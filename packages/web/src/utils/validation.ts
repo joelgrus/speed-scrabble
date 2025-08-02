@@ -92,7 +92,7 @@ export function sanitizeForDisplay(input: unknown): string {
 /**
  * Validates array bounds before accessing
  */
-export function validateArrayAccess<T>(array: T[], index: number): T | null {
+export function validateArrayAccess<T>(array: unknown, index: number): T | null {
   if (!Array.isArray(array)) {
     return null;
   }
@@ -105,7 +105,7 @@ export function validateArrayAccess<T>(array: T[], index: number): T | null {
     return null;
   }
 
-  return array[index];
+  return (array as T[])[index];
 }
 
 /**

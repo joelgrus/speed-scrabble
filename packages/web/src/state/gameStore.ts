@@ -478,17 +478,17 @@ export const useGame = create<GameState>()(
           return persistedState;
         }
 
-        const state = persistedState as Record<string, any>;
+        const state = persistedState as Record<string, unknown>;
 
         // Migrate old peelDraw to drawAmount
         if (state.rules && typeof state.rules === "object" && "peelDraw" in state.rules) {
-          const rules = state.rules as Record<string, any>;
+          const rules = state.rules as Record<string, unknown>;
           rules.drawAmount = rules.peelDraw || 2;
           delete rules.peelDraw;
         }
         // Ensure drawAmount exists
         if (state.rules && typeof state.rules === "object" && !("drawAmount" in state.rules)) {
-          (state.rules as Record<string, any>).drawAmount = 2;
+          (state.rules as Record<string, unknown>).drawAmount = 2;
         }
         return state;
       },
