@@ -1,7 +1,7 @@
-import '@testing-library/jest-dom'
+import "@testing-library/jest-dom";
 
 // Mock Canvas and related APIs for Konva
-Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
   value: () => ({
     fillRect: () => {},
     clearRect: () => {},
@@ -28,10 +28,10 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
     rect: () => {},
     clip: () => {},
   }),
-})
+});
 
 // Mock window methods
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
     matches: false,
@@ -43,4 +43,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: () => {},
     dispatchEvent: () => {},
   }),
-})
+});

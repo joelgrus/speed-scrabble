@@ -9,7 +9,11 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "dependencies": {
     "@ss/shared": "workspace:*",
@@ -27,8 +31,12 @@
     "@types/node": "^24.1.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
     "@vitest/coverage-v8": "^2.0.0",
+    "eslint": "^9.32.0",
     "jsdom": "^24.1.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "vite": "^5.4.0",
     "vitest": "^2.0.0"

@@ -3,11 +3,11 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import type { Stage as StageType } from "konva/lib/Stage";
 import { Stage, Layer, Rect, Group } from "react-konva";
 import { useGame } from "../state/gameStore";
-import { key, PlacedTile } from "@ss/shared";
+import { key, PlacedTile, CELL_SIZE, GRID_SIZE, ZOOM_CONFIG, PERFORMANCE_CONFIG } from "@ss/shared";
 import PlacedTileComponent from "./PlacedTileComponent";
 
-const CELL = 40;
-const GRID_SIZE = 25; // visible span around origin
+const CELL = CELL_SIZE;
+const GRID = GRID_SIZE;
 
 export default function BoardCanvas() {
   const board = useGame(s => s.board);
@@ -23,53 +23,62 @@ export default function BoardCanvas() {
   const [stageY, setStageY] = useState(0);
 
   // Dynamic origin based on stage position
-  const originX = GRID_SIZE * CELL;
-  const originY = GRID_SIZE * CELL;
+  const originX = GRID * CELL;
+  const originY = GRID * CELL;
 
   useEffect(() => {
     // Debounce validation to avoid excessive calls
     const timeoutId = setTimeout(() => {
       validate();
-    }, 100);
-    
+    }, PERFORMANCE_CONFIG.validationDebounceMs);
+
     return () => clearTimeout(timeoutId);
   }, [board, validate]);
 
   const tiles = useMemo(() => Object.values(board), [board]);
 
-  const handleGridClick = useCallback((e: KonvaEventObject<MouseEvent>) => {
-    const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    // Account for stage transform
-    const gridX = Math.floor(((point.x - stageX) / stageScale - originX) / CELL);
-    const gridY = Math.floor(((point.y - stageY) / stageScale - originY) / CELL);
-    setCursor({ pos: { x: gridX, y: gridY } });
-  }, [stageX, stageY, stageScale, originX, originY, setCursor]);
+  const handleGridClick = useCallback(
+    (e: KonvaEventObject<MouseEvent>) => {
+      const stage = e.target.getStage();
+      const point = stage.getPointerPosition();
+      // Account for stage transform
+      const gridX = Math.floor(((point.x - stageX) / stageScale - originX) / CELL);
+      const gridY = Math.floor(((point.y - stageY) / stageScale - originY) / CELL);
+      
+      // If clicking on the already-selected cell, toggle orientation
+      if (cursor.pos.x === gridX && cursor.pos.y === gridY) {
+        setCursor({ orient: cursor.orient === "H" ? "V" : "H" });
+      } else {
+        setCursor({ pos: { x: gridX, y: gridY } });
+      }
+    },
+    [stageX, stageY, stageScale, originX, originY, setCursor, cursor.pos.x, cursor.pos.y, cursor.orient]
+  );
 
   const handleWheel = useCallback((e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
-    
+
     const stage = e.target.getStage();
     const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
-    
+
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
-    
+
     // Zoom factor
-    const scaleBy = 1.1;
+    const scaleBy = ZOOM_CONFIG.step;
     const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
-    
+
     // Clamp zoom
-    const clampedScale = Math.max(0.3, Math.min(3, newScale));
-    
+    const clampedScale = Math.max(ZOOM_CONFIG.min, Math.min(ZOOM_CONFIG.max, newScale));
+
     const newPos = {
       x: pointer.x - mousePointTo.x * clampedScale,
       y: pointer.y - mousePointTo.y * clampedScale,
     };
-    
+
     setStageScale(clampedScale);
     setStageX(newPos.x);
     setStageY(newPos.y);
@@ -81,9 +90,9 @@ export default function BoardCanvas() {
   }, []);
 
   return (
-    <Stage 
+    <Stage
       ref={stageRef}
-      width={window.innerWidth - 320} 
+      width={window.innerWidth - 320}
       height={window.innerHeight - 64}
       onClick={handleGridClick}
       onWheel={handleWheel}
@@ -96,35 +105,35 @@ export default function BoardCanvas() {
     >
       <Layer>
         {/* Felt background - covers much larger area */}
-        <Rect 
-          x={-GRID_SIZE*CELL} 
-          y={-GRID_SIZE*CELL} 
-          width={GRID_SIZE*4*CELL} 
-          height={GRID_SIZE*4*CELL} 
+        <Rect
+          x={-GRID * CELL}
+          y={-GRID * CELL}
+          width={GRID * 4 * CELL}
+          height={GRID * 4 * CELL}
           fill="#2C5F2D"
         />
-        
+
         {/* Simplified grid using fewer elements */}
         {/* Vertical lines */}
-        {[...Array(GRID_SIZE*4+1)].map((_, i) => (
-          <Rect 
-            key={`v${i}`} 
-            x={(i-GRID_SIZE)*CELL} 
-            y={-GRID_SIZE*CELL} 
-            width={0.5} 
-            height={GRID_SIZE*4*CELL} 
-            fill="rgba(255, 255, 255, 0.08)" 
+        {[...Array(GRID * 4 + 1)].map((_, i) => (
+          <Rect
+            key={`v${i}`}
+            x={(i - GRID) * CELL}
+            y={-GRID * CELL}
+            width={0.5}
+            height={GRID * 4 * CELL}
+            fill="rgba(255, 255, 255, 0.08)"
           />
         ))}
         {/* Horizontal lines */}
-        {[...Array(GRID_SIZE*4+1)].map((_, i) => (
-          <Rect 
-            key={`h${i}`} 
-            x={-GRID_SIZE*CELL} 
-            y={(i-GRID_SIZE)*CELL} 
-            width={GRID_SIZE*4*CELL} 
-            height={0.5} 
-            fill="rgba(255, 255, 255, 0.08)" 
+        {[...Array(GRID * 4 + 1)].map((_, i) => (
+          <Rect
+            key={`h${i}`}
+            x={-GRID * CELL}
+            y={(i - GRID) * CELL}
+            width={GRID * 4 * CELL}
+            height={0.5}
+            fill="rgba(255, 255, 255, 0.08)"
           />
         ))}
       </Layer>
@@ -155,19 +164,19 @@ export default function BoardCanvas() {
             strokeWidth={2}
             shadowColor="rgba(0, 0, 0, 0.3)"
             shadowBlur={4}
-            shadowOffset={{x: 0, y: 2}}
+            shadowOffset={{ x: 0, y: 2 }}
           />
           {/* Orientation indicator */}
           <Rect
-            x={cursor.orient === "H" ? CELL - 12 : CELL/2 - 6}
-            y={cursor.orient === "H" ? CELL/2 - 6 : CELL - 12}
+            x={cursor.orient === "H" ? CELL - 12 : CELL / 2 - 6}
+            y={cursor.orient === "H" ? CELL / 2 - 6 : CELL - 12}
             width={cursor.orient === "H" ? 24 : 12}
             height={cursor.orient === "H" ? 12 : 24}
             fill="#FFD700"
             cornerRadius={2}
             shadowColor="rgba(0, 0, 0, 0.3)"
             shadowBlur={2}
-            shadowOffset={{x: 0, y: 1}}
+            shadowOffset={{ x: 0, y: 1 }}
           />
         </Group>
       </Layer>
