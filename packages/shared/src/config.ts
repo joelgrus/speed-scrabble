@@ -79,13 +79,6 @@ export const DUMP_CONFIG = {
 // VALIDATION & PERFORMANCE
 // =============================================================================
 
-/** Input validation bounds */
-export const VALIDATION_BOUNDS = {
-  /** Maximum allowed coordinate value */
-  maxCoordinate: 10000,
-  /** Minimum allowed coordinate value */
-  minCoordinate: -10000,
-} as const;
 
 /** Performance tuning parameters */
 export const PERFORMANCE_CONFIG = {
@@ -124,6 +117,34 @@ export const SCORING_CONFIG = {
 } as const;
 
 // =============================================================================
+// VALIDATION & BOUNDS CHECKING
+// =============================================================================
+
+/** Validation bounds for input checking */
+export const VALIDATION_BOUNDS = {
+  /** Maximum coordinate value (reasonable bounds for game board) */
+  maxCoordinate: 10000,
+  /** Minimum coordinate value */
+  minCoordinate: -10000,
+  /** Maximum array length for operations */
+  maxArrayLength: 1000,
+  /** Maximum string length for tile IDs and other inputs */
+  maxStringLength: 100,
+} as const;
+
+/** UI layout configuration */
+export const UI_LAYOUT = {
+  /** Width of the controls sidebar in pixels */
+  sidebarWidth: 320,
+  /** Height of the header/top UI area in pixels */
+  headerHeight: 80,
+  /** Minimum canvas width for responsive design */
+  minCanvasWidth: 400,
+  /** Minimum canvas height for responsive design */
+  minCanvasHeight: 300,
+} as const;
+
+// =============================================================================
 // DEVELOPMENT & TESTING
 // =============================================================================
 
@@ -151,7 +172,12 @@ export type GameConfig = {
   ui: {
     CELL_SIZE: typeof CELL_SIZE;
     GRID_SIZE: typeof GRID_SIZE;
-  } & typeof ZOOM_CONFIG & typeof TILE_EFFECTS;
+  } & typeof ZOOM_CONFIG & typeof TILE_EFFECTS & {
+    sidebarWidth: number;
+    headerHeight: number;
+    minCanvasWidth: number;
+    minCanvasHeight: number;
+  };
   rules: typeof DEFAULT_GAME_RULES & typeof DUMP_CONFIG;
   validation: typeof VALIDATION_BOUNDS;
   performance: typeof PERFORMANCE_CONFIG;
@@ -163,6 +189,7 @@ export const GAME_CONFIG: GameConfig = {
   ui: {
     ...ZOOM_CONFIG,
     ...TILE_EFFECTS,
+    ...UI_LAYOUT,
     CELL_SIZE,
     GRID_SIZE,
   },

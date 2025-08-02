@@ -53,6 +53,12 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+*.d.ts
+*.d.ts.map
+*.js
+!vite.config.js
+!vitest.config.js
+!eslint.config.js
 
 # Optional npm cache directory
 .npm

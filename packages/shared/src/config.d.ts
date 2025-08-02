@@ -51,13 +51,6 @@ export declare const DUMP_CONFIG: {
     /** Minimum tiles required in bag to allow dumping */
     readonly minimumBagSize: 3;
 };
-/** Input validation bounds */
-export declare const VALIDATION_BOUNDS: {
-    /** Maximum allowed coordinate value */
-    readonly maxCoordinate: 10000;
-    /** Minimum allowed coordinate value */
-    readonly minCoordinate: -10000;
-};
 /** Performance tuning parameters */
 export declare const PERFORMANCE_CONFIG: {
     /** Debounce delay for board validation in milliseconds */
@@ -86,6 +79,17 @@ export declare const SCORING_CONFIG: {
     readonly lengthBonusMultiplier: 0.1;
     /** Minimum word length for length bonus */
     readonly lengthBonusThreshold: 5;
+};
+/** Validation bounds for input checking */
+export declare const VALIDATION_BOUNDS: {
+    /** Maximum coordinate value (reasonable bounds for game board) */
+    readonly maxCoordinate: 10000;
+    /** Minimum coordinate value */
+    readonly minCoordinate: -10000;
+    /** Maximum array length for operations */
+    readonly maxArrayLength: 1000;
+    /** Maximum string length for tile IDs and other inputs */
+    readonly maxStringLength: 100;
 };
 /** Configuration for development and testing */
 export declare const DEV_CONFIG: {

@@ -66,13 +66,6 @@ export const DUMP_CONFIG = {
 // =============================================================================
 // VALIDATION & PERFORMANCE
 // =============================================================================
-/** Input validation bounds */
-export const VALIDATION_BOUNDS = {
-    /** Maximum allowed coordinate value */
-    maxCoordinate: 10000,
-    /** Minimum allowed coordinate value */
-    minCoordinate: -10000,
-};
 /** Performance tuning parameters */
 export const PERFORMANCE_CONFIG = {
     /** Debounce delay for board validation in milliseconds */
@@ -104,6 +97,20 @@ export const SCORING_CONFIG = {
     lengthBonusMultiplier: 0.1,
     /** Minimum word length for length bonus */
     lengthBonusThreshold: 5,
+};
+// =============================================================================
+// VALIDATION & BOUNDS CHECKING
+// =============================================================================
+/** Validation bounds for input checking */
+export const VALIDATION_BOUNDS = {
+    /** Maximum coordinate value (reasonable bounds for game board) */
+    maxCoordinate: 10000,
+    /** Minimum coordinate value */
+    minCoordinate: -10000,
+    /** Maximum array length for operations */
+    maxArrayLength: 1000,
+    /** Maximum string length for tile IDs and other inputs */
+    maxStringLength: 100,
 };
 // =============================================================================
 // DEVELOPMENT & TESTING

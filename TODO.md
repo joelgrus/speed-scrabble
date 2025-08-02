@@ -15,19 +15,19 @@
 - [x] Add schema validation for all new game mode types
 - [x] Ensure runtime validation matches TypeScript types exactly
 
-### Error Boundaries
-- [ ] Wrap BoardCanvas component with error boundary
-- [ ] Wrap TileRack component with error boundary
-- [ ] Wrap Controls component with error boundary
-- [ ] Add error logging/reporting to error boundaries
-- [ ] Create user-friendly error recovery UI
+### Error Boundaries ✅ COMPLETED
+- [x] Wrap BoardCanvas component with error boundary
+- [x] Wrap TileRack component with error boundary
+- [x] Wrap Controls component with error boundary
+- [x] Add error logging/reporting to error boundaries
+- [x] Create user-friendly error recovery UI
 
-### Critical Bug Fixes
-- [ ] Fix silent failures in placeTile() - should notify user on error
-- [ ] Fix silent failures in removeTile() - should notify user on error
-- [ ] Add proper error recovery mechanisms throughout gameStore
-- [ ] Fix missing bounds checking for grid coordinates
-- [ ] Validate tile IDs before all array operations
+### Critical Bug Fixes ✅ COMPLETED
+- [x] Fix silent failures in placeTile() - should notify user on error
+- [x] Fix silent failures in removeTile() - should notify user on error
+- [x] Add proper error recovery mechanisms throughout gameStore
+- [x] Fix missing bounds checking for grid coordinates
+- [x] Validate tile IDs before all array operations
 
 ## 🔧 P1: Architecture & Performance (Fix before scaling)
 
