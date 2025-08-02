@@ -38,6 +38,7 @@ type GameState = {
   gameStartTime: number | null;
   currentTime: number;
   dumpPenalties: number; // Total penalty seconds from dumps
+  dumpCount: number; // Number of dumps performed
   isGameActive: boolean;
 
   init(dict: Set<string>, seed?: string): void;
@@ -89,6 +90,7 @@ export const useGame = create<GameState>()(
       gameStartTime: null,
       currentTime: 0,
       dumpPenalties: 0,
+      dumpCount: 0,
       isGameActive: false,
 
       init(dict, seed = "local") {
@@ -114,6 +116,7 @@ export const useGame = create<GameState>()(
           gameStartTime: Date.now(),
           currentTime: 0,
           dumpPenalties: 0,
+          dumpCount: 0,
           isGameActive: true,
         });
       },
@@ -385,6 +388,7 @@ export const useGame = create<GameState>()(
             gameStartTime: now,
             currentTime: 0,
             dumpPenalties: 0,
+            dumpCount: 0,
             isGameActive: true,
           });
         } catch (error) {
@@ -422,9 +426,24 @@ export const useGame = create<GameState>()(
 
       addDumpPenalty() {
         try {
-          const { dumpPenalties } = get();
+          const { dumpPenalties, dumpCount } = get();
+          const newDumpCount = dumpCount + 1;
+          
+          // Calculate escalating penalty: 30s, 60s, 120s, then +60s each additional
+          let penalty: number;
+          if (newDumpCount <= TIMED_GAME_CONFIG.dumpPenalties.length) {
+            // Use predefined penalties for first 3 dumps
+            penalty = TIMED_GAME_CONFIG.dumpPenalties[newDumpCount - 1];
+          } else {
+            // For 4th dump and beyond: 120s + (additional_dumps * 60s)
+            const additionalDumps = newDumpCount - TIMED_GAME_CONFIG.dumpPenalties.length;
+            const basePenalty = TIMED_GAME_CONFIG.dumpPenalties[TIMED_GAME_CONFIG.dumpPenalties.length - 1];
+            penalty = basePenalty + (additionalDumps * TIMED_GAME_CONFIG.additionalDumpPenalty);
+          }
+          
           set({
-            dumpPenalties: dumpPenalties + TIMED_GAME_CONFIG.dumpTimePenalty,
+            dumpPenalties: dumpPenalties + penalty,
+            dumpCount: newDumpCount,
           });
         } catch (error) {
           console.error("Error adding dump penalty:", error);
