@@ -14,6 +14,7 @@ import {
 } from "@ss/shared";
 import type { Board, Cursor, Rules, Tile, ValidationIssue } from "@ss/shared";
 import { validateCoordinates, validateTileId, safeArraySplice } from "../utils/validation";
+import { errorReporter, getSafeGameState } from "../utils/errorReporting";
 
 type GameState = {
   rules: Rules;
@@ -177,6 +178,13 @@ export const useGame = create<GameState>()(
           get().validate();
         } catch (error) {
           console.error("Error placing tile:", error);
+          if (error instanceof Error) {
+            errorReporter.reportException(error, {
+              component: 'gameStore.placeTile',
+              action: `placeTile(${tileId}, ${x}, ${y})`,
+              gameState: getSafeGameState(),
+            });
+          }
         }
       },
 
@@ -202,6 +210,13 @@ export const useGame = create<GameState>()(
           get().validate();
         } catch (error) {
           console.error("Error removing tile:", error);
+          if (error instanceof Error) {
+            errorReporter.reportException(error, {
+              component: 'gameStore.removeTile',
+              action: `removeTile(${x}, ${y})`,
+              gameState: getSafeGameState(),
+            });
+          }
         }
       },
 
@@ -344,6 +359,13 @@ export const useGame = create<GameState>()(
           get().validate();
         } catch (error) {
           console.error("Error dumping tile:", error);
+          if (error instanceof Error) {
+            errorReporter.reportException(error, {
+              component: 'gameStore.dumpTile',
+              action: `dumpTile(${tileId})`,
+              gameState: getSafeGameState(),
+            });
+          }
         }
       },
 

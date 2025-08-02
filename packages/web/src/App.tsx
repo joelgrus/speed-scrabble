@@ -4,8 +4,11 @@ import BoardCanvas from "./components/BoardCanvas";
 import TileRack from "./components/TileRack";
 import Controls from "./components/Controls";
 import ErrorBoundary from "./components/ErrorBoundary";
+import GameErrorBoundary from "./components/GameErrorBoundary";
+import ErrorMonitor from "./components/ErrorMonitor";
 import { useKeyboard } from "./hooks/useKeyboard";
 import { createShareUrl } from "@ss/shared";
+import { errorReporter, getSafeGameState } from "./utils/errorReporting";
 
 export default function App() {
   const init = useGame(s => s.init);
@@ -72,25 +75,12 @@ export default function App() {
         }}
       >
         <div style={{ position: "relative", overflow: "hidden" }}>
-          <ErrorBoundary
-            fallback={
-              <div style={{ padding: "20px", color: "#FAF8F3", textAlign: "center" }}>
-                <h3>Game Board Error</h3>
-                <p>There was an error with the game board. Please refresh the page.</p>
-              </div>
-            }
-          >
+          <GameErrorBoundary component="BoardCanvas">
             <BoardCanvas />
-          </ErrorBoundary>
-          <ErrorBoundary
-            fallback={
-              <div style={{ padding: "20px", color: "#FAF8F3", textAlign: "center" }}>
-                <p>Tile rack error. Please refresh the page.</p>
-              </div>
-            }
-          >
+          </GameErrorBoundary>
+          <GameErrorBoundary component="TileRack">
             <TileRack />
-          </ErrorBoundary>
+          </GameErrorBoundary>
           {justDrew && (
             <div
               style={{
@@ -280,17 +270,11 @@ export default function App() {
             </div>
           )}
         </div>
-        <ErrorBoundary
-          fallback={
-            <div style={{ padding: "20px", color: "#FAF8F3", textAlign: "center" }}>
-              <h3>Controls Error</h3>
-              <p>There was an error with the game controls. Please refresh the page.</p>
-            </div>
-          }
-        >
+        <GameErrorBoundary component="Controls">
           <Controls />
-        </ErrorBoundary>
+        </GameErrorBoundary>
       </div>
+      <ErrorMonitor />
     </ErrorBoundary>
   );
 }
