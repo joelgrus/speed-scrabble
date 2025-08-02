@@ -62,6 +62,58 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      {/* Header with title and GitHub link */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 50,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0 20px",
+          background: "rgba(26, 77, 26, 0.95)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          zIndex: 100,
+          backdropFilter: "blur(5px)",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 24,
+            fontFamily: "Arial, sans-serif",
+            fontWeight: "bold",
+            color: "#E8F5E8",
+            textShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          Speed Scrabble
+        </h1>
+        <a
+          href="https://github.com/joelgrus/speed-scrabble"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "#E8F5E8",
+            textDecoration: "none",
+            fontSize: 14,
+            fontFamily: "Arial, sans-serif",
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            opacity: 0.7,
+            transition: "opacity 0.2s ease",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.7")}
+        >
+          <span>GitHub</span>
+          <span style={{ fontSize: 12 }}>↗</span>
+        </a>
+      </div>
       <div
         style={{
           display: "grid",
@@ -71,6 +123,7 @@ export default function App() {
           overflow: "hidden",
           margin: 0,
           padding: 0,
+          paddingTop: 50, // Account for header height
           background: "linear-gradient(to bottom, #1A4D1A, #0D2D0D)",
           fontFamily: "Arial, sans-serif",
         }}
