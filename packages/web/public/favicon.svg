@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Tile background with gradient -->
+  <defs>
+    <linearGradient id="tileGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF8DC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F5DEB3;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Tile background -->
+  <rect x="2" y="2" width="28" height="28" rx="2" ry="2" 
+        fill="url(#tileGradient)" 
+        stroke="#D2B48C" 
+        stroke-width="1"
+        filter="url(#shadow)"/>
+  
+  <!-- Letter S -->
+  <text x="16" y="22" 
+        font-family="Arial, sans-serif" 
+        font-size="18" 
+        font-weight="bold" 
+        text-anchor="middle" 
+        fill="#2F4F2F">S</text>
+  
+  <!-- Point value -->
+  <text x="26" y="28" 
+        font-family="Arial, sans-serif" 
+        font-size="6" 
+        font-weight="normal" 
+        text-anchor="end" 
+        fill="#2F4F2F">1</text>
+</svg>
