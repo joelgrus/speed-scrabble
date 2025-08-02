@@ -57,6 +57,9 @@ type GameState = {
   endGame(): void;
   addDumpPenalty(): void;
   getTotalTime(): number;
+  
+  // Share methods
+  getShareableResult(): { username: string; date: string; width: number; height: number; grid: string; time: number } | null;
 };
 
 const DEFAULT_RULES: Rules = DEFAULT_GAME_RULES;
@@ -412,6 +415,57 @@ export const useGame = create<GameState>()(
         } catch (error) {
           console.error("Error calculating total time:", error);
           return 0;
+        }
+      },
+
+      getShareableResult() {
+        try {
+          const { board, gameWon } = get();
+          
+          if (!gameWon || Object.keys(board).length === 0) {
+            return null;
+          }
+
+          // Find bounding box of the board
+          const coords = Object.keys(board).map(k => {
+            const [x, y] = k.split(',').map(Number);
+            return { x, y };
+          });
+
+          if (coords.length === 0) return null;
+
+          const minX = Math.min(...coords.map(c => c.x));
+          const maxX = Math.max(...coords.map(c => c.x));
+          const minY = Math.min(...coords.map(c => c.y));
+          const maxY = Math.max(...coords.map(c => c.y));
+
+          const width = maxX - minX + 1;
+          const height = maxY - minY + 1;
+
+          // Build grid string
+          let grid = '';
+          for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+              const tile = board[key(x, y)];
+              grid += tile ? tile.letter : '.';
+            }
+          }
+
+          // For now, use placeholder values - in the future this will come from user auth and daily puzzle system
+          const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+          const username = 'Player'; // Placeholder - will be replaced with actual user system
+          
+          return {
+            username,
+            date: today,
+            width,
+            height,
+            grid,
+            time: get().getTotalTime()
+          };
+        } catch (error) {
+          console.error("Error creating shareable result:", error);
+          return null;
         }
       },
     }),

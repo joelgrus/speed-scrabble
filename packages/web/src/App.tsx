@@ -5,6 +5,7 @@ import TileRack from "./components/TileRack";
 import Controls from "./components/Controls";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useKeyboard } from "./hooks/useKeyboard";
+import { createShareUrl } from "@ss/shared";
 
 export default function App() {
   const init = useGame(s => s.init);
@@ -14,7 +15,9 @@ export default function App() {
   const reset = useGame(s => s.reset);
   const board = useGame(s => s.board);
   const getTotalTime = useGame(s => s.getTotalTime);
+  const getShareableResult = useGame(s => s.getShareableResult);
   const [loaded, setLoaded] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
   useKeyboard();
 
@@ -36,6 +39,20 @@ export default function App() {
         validate();
       });
   }, [init, validate]);
+
+  const handleShare = async () => {
+    const result = getShareableResult();
+    if (!result) return;
+    
+    const url = createShareUrl(result, window.location.origin);
+    setShareUrl(url);
+    
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (error) {
+      console.warn("Could not copy to clipboard:", error);
+    }
+  };
 
   if (!loaded) return <div style={{ padding: 24 }}>Loading…</div>;
 
@@ -187,35 +204,78 @@ export default function App() {
                 >
                   Challenge yourself to beat this time!
                 </p>
-                <button
-                  onClick={reset}
-                  style={{
-                    padding: "16px 40px",
-                    fontSize: 20,
-                    background: "linear-gradient(to bottom, #8B6B47, #6D5437)",
-                    color: "#FAF8F3",
-                    border: "none",
-                    borderRadius: 12,
-                    cursor: "pointer",
-                    fontFamily: "Arial, sans-serif",
-                    fontWeight: "bold",
-                    boxShadow:
-                      "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
-                  }}
-                >
-                  🎲 Play Again
-                </button>
+                {shareUrl && (
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: "#4CAF50",
+                      margin: "0 0 20px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    📋 Link copied to clipboard!
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+                  <button
+                    onClick={handleShare}
+                    style={{
+                      padding: "16px 32px",
+                      fontSize: 18,
+                      background: "linear-gradient(to bottom, #4CAF50, #388E3C)",
+                      color: "#FAF8F3",
+                      border: "none",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                      fontFamily: "Arial, sans-serif",
+                      fontWeight: "bold",
+                      boxShadow:
+                        "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+                    }}
+                  >
+                    📤 Share Result
+                  </button>
+                  <button
+                    onClick={reset}
+                    style={{
+                      padding: "16px 32px",
+                      fontSize: 18,
+                      background: "linear-gradient(to bottom, #8B6B47, #6D5437)",
+                      color: "#FAF8F3",
+                      border: "none",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                      fontFamily: "Arial, sans-serif",
+                      fontWeight: "bold",
+                      boxShadow:
+                        "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+                    }}
+                  >
+                    🎲 Play Again
+                  </button>
+                </div>
               </div>
             </div>
           )}
