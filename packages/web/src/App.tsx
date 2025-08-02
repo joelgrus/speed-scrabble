@@ -90,7 +90,32 @@ export default function App() {
             textShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
           }}
         >
-          Speed Scrabble
+          Speed Scrabble by{" "}
+          <a
+            href="https://joelgrus.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#E8F5E8",
+              textDecoration: "underline",
+              textDecorationColor: "rgba(232, 245, 232, 0.5)",
+            }}
+          >
+            Joel Grus
+          </a>
+          {" "}and{" "}
+          <a
+            href="https://www.anthropic.com/claude-code"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#E8F5E8",
+              textDecoration: "underline",
+              textDecorationColor: "rgba(232, 245, 232, 0.5)",
+            }}
+          >
+            Claude
+          </a>
         </h1>
         <a
           href="https://github.com/joelgrus/speed-scrabble"
