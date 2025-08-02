@@ -6,7 +6,17 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage"
+  },
   "dependencies": {
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.0"
   }
 }

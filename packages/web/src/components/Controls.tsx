@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useGame } from "../state/gameStore";
 
 export default function Controls() {
@@ -29,7 +29,7 @@ export default function Controls() {
         fontSize: "24px"
       }}>Game</h3>
       <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Pool: <strong>{pool}</strong></p>
-      <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Tiles: <strong>{Object.keys(board).length}</strong> placed, <strong>{rack.length}</strong> in rack</p>
+      <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Tiles: <strong>{useMemo(() => Object.keys(board).length, [board])}</strong> placed, <strong>{rack.length}</strong> in rack</p>
       <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Direction: <strong style={{ color: "#8B6B47" }}>{orientation === "H" ? "Horizontal →" : "Vertical ↓"}</strong></p>
       
       {invalidWords.length > 0 || (!connected && Object.keys(board).length > 1) ? (

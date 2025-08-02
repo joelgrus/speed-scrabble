@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
+import type { KonvaEventObject } from "konva/lib/Node";
 import { Group, Rect, Text } from "react-konva";
 import { PlacedTile, LETTER_VALUES } from "@ss/shared";
 
@@ -18,7 +19,7 @@ export default function PlacedTileComponent({ tile, x, y, isInvalid, onRemove, o
   const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout>();
   
-  const handleTileClick = (e: any) => {
+  const handleTileClick = useCallback((e: KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true; // Prevent grid click
     
     // Right click
@@ -39,13 +40,13 @@ export default function PlacedTileComponent({ tile, x, y, isInvalid, onRemove, o
     if (e.evt.button === 0) {
       onCursorMove(tile.x, tile.y);
     }
-  };
+  }, [tile.x, tile.y, onRemove, onCursorMove]);
   
-  const handleContextMenu = (e: any) => {
+  const handleContextMenu = useCallback((e: KonvaEventObject<Event>) => {
     e.evt.preventDefault(); // Prevent browser context menu
-  };
+  }, []);
   
-  const handleTouchStart = (e: any) => {
+  const handleTouchStart = useCallback((e: KonvaEventObject<TouchEvent>) => {
     e.cancelBubble = true;
     setIsLongPress(false);
     
@@ -57,18 +58,18 @@ export default function PlacedTileComponent({ tile, x, y, isInvalid, onRemove, o
         navigator.vibrate(50);
       }
     }, 500);
-  };
+  }, [tile.x, tile.y, onRemove]);
   
-  const handleTouchEnd = (e: any) => {
+  const handleTouchEnd = useCallback((e: KonvaEventObject<TouchEvent>) => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
     setIsLongPress(false);
-  };
+  }, []);
   
-  const letterValue = LETTER_VALUES[tile.letter as keyof typeof LETTER_VALUES];
-  const tileScale = isLongPress ? 1.1 : isHovered ? 1.05 : 1;
-  const tileLift = isLongPress ? -2 : isHovered ? -1 : 0;
+  const letterValue = useMemo(() => LETTER_VALUES[tile.letter as keyof typeof LETTER_VALUES], [tile.letter]);
+  const tileScale = useMemo(() => isLongPress ? 1.1 : isHovered ? 1.05 : 1, [isLongPress, isHovered]);
+  const tileLift = useMemo(() => isLongPress ? -2 : isHovered ? -1 : 0, [isLongPress, isHovered]);
   
   return (
     <Group 
@@ -79,8 +80,8 @@ export default function PlacedTileComponent({ tile, x, y, isInvalid, onRemove, o
       onMouseDown={handleTileClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={useCallback(() => setIsHovered(true), [])}
+      onMouseLeave={useCallback(() => setIsHovered(false), [])}
     >
       {/* Simplified shadow - only render when needed */}
       {(isHovered || isLongPress || isInvalid) && (

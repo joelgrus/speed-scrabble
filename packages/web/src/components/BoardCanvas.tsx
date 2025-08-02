@@ -1,4 +1,6 @@
-import React, { useMemo, useEffect, useState, useRef } from "react";
+import React, { useMemo, useEffect, useState, useRef, useCallback } from "react";
+import type { KonvaEventObject } from "konva/lib/Node";
+import type { Stage as StageType } from "konva/lib/Stage";
 import { Stage, Layer, Rect, Group } from "react-konva";
 import { useGame } from "../state/gameStore";
 import { key, PlacedTile } from "@ss/shared";
@@ -15,7 +17,7 @@ export default function BoardCanvas() {
   const setCursor = useGame(s => s.setCursor);
   const removeTile = useGame(s => s.removeTile);
 
-  const stageRef = useRef<any>();
+  const stageRef = useRef<StageType | null>(null);
   const [stageScale, setStageScale] = useState(1);
   const [stageX, setStageX] = useState(0);
   const [stageY, setStageY] = useState(0);
@@ -25,22 +27,26 @@ export default function BoardCanvas() {
   const originY = GRID_SIZE * CELL;
 
   useEffect(() => {
-    // revalidate after any board change (debounced in real code)
-    validate();
+    // Debounce validation to avoid excessive calls
+    const timeoutId = setTimeout(() => {
+      validate();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [board, validate]);
 
   const tiles = useMemo(() => Object.values(board), [board]);
 
-  const handleGridClick = (e: any) => {
+  const handleGridClick = useCallback((e: KonvaEventObject<MouseEvent>) => {
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
     // Account for stage transform
     const gridX = Math.floor(((point.x - stageX) / stageScale - originX) / CELL);
     const gridY = Math.floor(((point.y - stageY) / stageScale - originY) / CELL);
     setCursor({ pos: { x: gridX, y: gridY } });
-  };
+  }, [stageX, stageY, stageScale, originX, originY, setCursor]);
 
-  const handleWheel = (e: any) => {
+  const handleWheel = useCallback((e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     
     const stage = e.target.getStage();
@@ -67,12 +73,12 @@ export default function BoardCanvas() {
     setStageScale(clampedScale);
     setStageX(newPos.x);
     setStageY(newPos.y);
-  };
+  }, []);
 
-  const handleDragEnd = (e: any) => {
+  const handleDragEnd = useCallback((e: KonvaEventObject<DragEvent>) => {
     setStageX(e.target.x());
     setStageY(e.target.y());
-  };
+  }, []);
 
   return (
     <Stage 

@@ -57,7 +57,181 @@
 
 ---
 
-## 🎯 NEXT PHASE: Timed Gameplay & Scoring
+## 🔧 CRITICAL: Code Quality & Engineering Foundation
+
+**Status**: Must complete before adding new features
+**Assessment**: Codebase has solid architecture but critical gaps in testing, error handling, and reliability
+
+### 🚨 Critical Issues (Fix Immediately)
+
+#### **Testing Infrastructure - ZERO COVERAGE**
+- [ ] **Set up testing framework**
+  - [ ] Install Jest + React Testing Library + @testing-library/jest-dom
+  - [ ] Configure test scripts in package.json
+  - [ ] Set up test environment with proper TypeScript support
+  - [ ] Add coverage reporting (aim for 80%+ on core logic)
+
+- [ ] **Core Game Logic Tests** (Priority 1)
+  - [ ] `bag.ts`: Test tile distribution, shuffling determinism, edge cases
+  - [ ] `validator.ts`: Test word validation, connectivity checking, edge cases
+  - [ ] `board.ts`: Test word extraction, placement logic, coordinate handling
+  - [ ] `rng.ts`: Test seeded randomness, deterministic output
+  - [ ] `letterValues.ts`: Test all letter mappings exist
+
+- [ ] **State Management Tests** (Priority 2)  
+  - [ ] `gameStore.ts`: Test all state transitions, side effects, persistence
+  - [ ] Test race conditions in async operations (autoDraw, validation)
+  - [ ] Test edge cases: empty rack, full board, invalid moves
+  - [ ] Test dump mechanics: tile return, bag shuffling, draw counts
+
+- [ ] **Component Integration Tests** (Priority 3)
+  - [ ] `useKeyboard.ts`: Test all keyboard interactions, prevent default behavior
+  - [ ] `PlacedTileComponent.tsx`: Test click/touch interactions, hover states
+  - [ ] `TileRack.tsx`: Test tile selection, dump mode, animations
+
+#### **Error Handling & Resilience**
+- [ ] **Add React Error Boundaries**
+  - [ ] Create `ErrorBoundary` component for the entire app
+  - [ ] Add specific boundaries around game canvas and tile interactions
+  - [ ] Implement error reporting/logging system
+  - [ ] Add graceful fallback UI for component failures
+
+- [ ] **Input Validation & Bounds Checking**
+  - [ ] Validate all coordinates before board operations
+  - [ ] Add bounds checking for array operations (rack.splice, bag.splice)
+  - [ ] Validate tile IDs exist before operations
+  - [ ] Add safeguards for malformed persisted state
+
+- [ ] **State Validation**
+  - [ ] Use Zod schemas to validate state at persistence boundaries
+  - [ ] Add runtime validation for critical state transitions
+  - [ ] Implement state recovery mechanisms for corrupted data
+  - [ ] Add invariant checks for game state consistency
+
+#### **Performance Critical Fixes**
+- [ ] **Fix Event Handler Recreation**
+  - [ ] Move `useKeyboard` dependencies to useCallback
+  - [ ] Implement proper memoization for expensive operations
+  - [ ] Fix cursor position causing constant re-renders
+
+- [ ] **Optimize Validation Calls**
+  - [ ] Debounce validation to max 1 call per 16ms (60fps)
+  - [ ] Implement incremental validation (only check changed areas)
+  - [ ] Cache validation results and invalidate strategically
+
+- [ ] **State Update Batching**
+  - [ ] Batch related state updates into single operations
+  - [ ] Use React 18 automatic batching where possible
+  - [ ] Minimize unnecessary re-renders in child components
+
+### ⚠️ High Priority Issues (Next Sprint)
+
+#### **Configuration Management**
+- [ ] **Centralize Game Constants**
+  - [ ] Create `packages/shared/src/config.ts` with all magic numbers
+  - [ ] Move CELL, GRID_SIZE, DEFAULT_RULES to config
+  - [ ] Add environment-based configuration support
+  - [ ] Document all configurable parameters
+
+- [ ] **Game Rules Architecture**  
+  - [ ] Create proper Rules interface with validation
+  - [ ] Support multiple game modes (classic, timed, custom)
+  - [ ] Add rules validation and migration system
+
+#### **Type Safety Improvements**
+- [ ] **Remove All `any` Types**
+  - [ ] Fix event handler typing in PlacedTileComponent
+  - [ ] Add proper Konva event types throughout
+  - [ ] Create strict type guards for external data
+
+- [ ] **Runtime Validation at Boundaries**
+  - [ ] Use Zod schemas for all component prop validation
+  - [ ] Validate localStorage data before use
+  - [ ] Add type guards for external API data (dictionary loading)
+
+- [ ] **Strict TypeScript Configuration**
+  - [ ] Add tsconfig.json with strict mode enabled
+  - [ ] Fix all implicit any types
+  - [ ] Enable strict null checks
+
+#### **Developer Experience**
+- [ ] **Build Tooling**
+  - [ ] Add ESLint with strict rules
+  - [ ] Add Prettier for consistent formatting
+  - [ ] Set up pre-commit hooks with lint-staged
+  - [ ] Add TypeScript path mapping for clean imports
+
+- [ ] **Development Scripts**
+  - [ ] Add test:watch, test:coverage commands
+  - [ ] Add lint:fix, format commands
+  - [ ] Add build:analyze for bundle analysis
+
+### 📈 Medium Priority (Future Iterations)
+
+#### **Architecture Improvements**
+- [ ] **Component Responsibility Separation**
+  - [ ] Split PlacedTileComponent concerns (rendering, interaction, animation)
+  - [ ] Create custom hooks for complex logic (useTileInteraction, useHover)
+  - [ ] Implement proper separation between container and presentation components
+
+- [ ] **Domain-Driven Design**
+  - [ ] Organize code into domain layers (domain/application/infrastructure/presentation)
+  - [ ] Create proper domain services for game operations
+  - [ ] Implement repository pattern for state persistence
+
+#### **Security & Reliability**
+- [ ] **Input Sanitization**
+  - [ ] Sanitize all user-displayable content (word validation errors)
+  - [ ] Add XSS protection for dynamic content
+  - [ ] Validate and escape localStorage data
+
+- [ ] **Monitoring & Observability**
+  - [ ] Add error tracking (Sentry or similar)
+  - [ ] Implement performance monitoring
+  - [ ] Add user analytics for game metrics
+  - [ ] Create health check endpoints
+
+#### **Documentation**
+- [ ] **API Documentation**
+  - [ ] Document all shared package exports with JSDoc
+  - [ ] Create architecture decision records (ADRs)
+  - [ ] Add component prop documentation with Storybook
+
+- [ ] **Developer Guides**
+  - [ ] Write contribution guidelines
+  - [ ] Create development setup guide
+  - [ ] Document build and deployment processes
+
+### 📝 Implementation Priority Order
+
+**Week 1: Critical Foundation**
+1. Set up testing framework and write core logic tests
+2. Add error boundaries and input validation
+3. Fix performance issues (event handlers, validation)
+
+**Week 2: Type Safety & Configuration**  
+1. Remove all `any` types and add strict TypeScript
+2. Centralize configuration and add runtime validation
+3. Set up development tooling (ESLint, Prettier, pre-commit)
+
+**Week 3: Architecture & Documentation**
+1. Refactor component responsibilities
+2. Add comprehensive error handling
+3. Create basic API documentation
+
+**Success Criteria Before Adding Timed Gameplay:**
+- [ ] 80%+ test coverage on core game logic
+- [ ] Zero TypeScript `any` types
+- [ ] All user inputs validated
+- [ ] Error boundaries implemented
+- [ ] Performance issues resolved
+- [ ] Configuration centralized
+
+---
+
+## 🎯 PHASE 2: Timed Gameplay & Scoring
+
+**Prerequisites**: Complete Code Quality & Engineering Foundation above
 
 ### Timer System
 - [ ] **Game Timer**
@@ -144,8 +318,8 @@
 
 ## 📝 Implementation Notes
 
-**Current Status**: Visual polish complete ✅
-**Next Sprint**: Implement timer system and dumping penalties
-**Target**: Transform into a fast-paced, strategic word game
+**Current Status**: Visual polish complete ✅ → **NEXT**: Engineering foundation
+**Critical Path**: Must fix code quality issues before adding timed gameplay
+**Target**: Transform into a reliable, maintainable, fast-paced word game
 
-The visual transformation is complete - the game now looks professional and polished. The next major phase focuses on adding time pressure and strategic decision-making around tile dumping to create engaging, fast-paced gameplay.
+The visual transformation is complete and the game looks professional. However, the codebase needs a solid engineering foundation with comprehensive tests, error handling, and performance optimizations before adding complex features like timed gameplay. This investment in code quality will ensure long-term maintainability and reliability.

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { mulberry32, seedFromString, buildBag, validateBoard, key } from "@ss/shared";
 import type { Board, Cursor, Rules, Tile, ValidationIssue } from "@ss/shared";
+import { validateCoordinates, validateTileId, safeArraySplice } from "../utils/validation";
 
 type GameState = {
   rules: Rules;
@@ -73,43 +74,121 @@ export const useGame = create<GameState>()(
       },
 
       placeTile(tileId, x, y) {
-        const { rack, board, cursor } = get();
-        
-        // Don't allow placing on occupied squares
-        if (board[key(x,y)]) return;
-        
-        const idx = rack.findIndex(t => t.id === tileId);
-        if (idx === -1) return;
-        const [t] = rack.splice(idx, 1);
-        board[key(x,y)] = { id: t.id, letter: t.letter, x, y };
-        // Advance cursor after placing
-        const nextX = cursor.orient === "H" ? x + 1 : x;
-        const nextY = cursor.orient === "V" ? y + 1 : y;
-        set({ 
-          rack, 
-          board: { ...board },
-          cursor: { ...cursor, pos: { x: nextX, y: nextY } }
-        });
-        
-        // Trigger validation after placement
-        get().validate();
+        try {
+          const { rack, board, cursor } = get();
+          
+          // Validate inputs
+          const validCoords = validateCoordinates(x, y);
+          if (!validCoords) {
+            console.warn('Invalid coordinates for tile placement:', x, y);
+            return;
+          }
+          
+          const validTileId = validateTileId(tileId);
+          if (!validTileId) {
+            console.warn('Invalid tile ID for placement:', tileId);
+            return;
+          }
+          
+          // Don't allow placing on occupied squares
+          if (board[key(validCoords.x, validCoords.y)]) return;
+          
+          const idx = rack.findIndex(t => t.id === validTileId);
+          if (idx === -1) {
+            console.warn('Tile not found in rack:', validTileId);
+            return;
+          }
+          
+          // Safely remove tile from rack
+          const removedTiles = safeArraySplice(rack, idx, 1);
+          if (removedTiles.length === 0) {
+            console.warn('Failed to remove tile from rack');
+            return;
+          }
+          
+          const [t] = removedTiles;
+          board[key(validCoords.x, validCoords.y)] = { 
+            id: t.id, 
+            letter: t.letter, 
+            x: validCoords.x, 
+            y: validCoords.y 
+          };
+          
+          // Advance cursor after placing
+          const nextX = cursor.orient === "H" ? validCoords.x + 1 : validCoords.x;
+          const nextY = cursor.orient === "V" ? validCoords.y + 1 : validCoords.y;
+          
+          set({ 
+            rack: [...rack], 
+            board: { ...board },
+            cursor: { ...cursor, pos: { x: nextX, y: nextY } }
+          });
+          
+          // Trigger validation after placement
+          get().validate();
+        } catch (error) {
+          console.error('Error placing tile:', error);
+        }
       },
 
       removeTile(x, y) {
-        const { rack, board } = get();
-        const pt = board[key(x,y)];
-        if (!pt) return;
-        delete board[key(x,y)];
-        rack.push({ id: pt.id, letter: pt.letter });
-        set({ rack: [...rack], board: { ...board } });
-        
-        // Trigger validation after removal
-        get().validate();
+        try {
+          const { rack, board } = get();
+          
+          // Validate coordinates
+          const validCoords = validateCoordinates(x, y);
+          if (!validCoords) {
+            console.warn('Invalid coordinates for tile removal:', x, y);
+            return;
+          }
+          
+          const pt = board[key(validCoords.x, validCoords.y)];
+          if (!pt) return;
+          
+          delete board[key(validCoords.x, validCoords.y)];
+          rack.push({ id: pt.id, letter: pt.letter });
+          set({ rack: [...rack], board: { ...board } });
+          
+          // Trigger validation after removal
+          get().validate();
+        } catch (error) {
+          console.error('Error removing tile:', error);
+        }
       },
 
       setCursor(c) {
-        const cur = get().cursor;
-        set({ cursor: { ...cur, ...c, pos: { ...cur.pos, ...c.pos } } });
+        try {
+          const cur = get().cursor;
+          
+          // Validate cursor update
+          const newCursor = { ...cur, ...c };
+          if (c.pos) {
+            newCursor.pos = { ...cur.pos, ...c.pos };
+            
+            // Validate new position if provided
+            if (c.pos.x !== undefined || c.pos.y !== undefined) {
+              const validCoords = validateCoordinates(
+                c.pos.x !== undefined ? c.pos.x : cur.pos.x,
+                c.pos.y !== undefined ? c.pos.y : cur.pos.y
+              );
+              if (!validCoords) {
+                console.warn('Invalid cursor coordinates:', c.pos);
+                return;
+              }
+              newCursor.pos = validCoords;
+            }
+          }
+          
+          // Validate orientation if provided
+          if (c.orient && c.orient !== 'H' && c.orient !== 'V') {
+            console.warn('Invalid cursor orientation:', c.orient);
+            return;
+          }
+          
+          set({ cursor: newCursor });
+        } catch (error) {
+          console.error('Error setting cursor:', error);
+        }
       },
 
       validate() {
@@ -126,10 +205,10 @@ export const useGame = create<GameState>()(
           set({ gameWon: true });
         }
         
-        // Auto-draw if conditions are met
+        // Auto-draw if conditions are met - debounced to avoid rapid calls
         setTimeout(() => {
           get().autoDraw();
-        }, 100); // Small delay to let state settle
+        }, 150); // Slightly longer delay to let state settle and reduce rapid calls
       },
 
       canDraw() {
@@ -161,37 +240,59 @@ export const useGame = create<GameState>()(
       },
 
       dumpTile(tileId) {
-        const { rack, bag, rngSeed } = get();
-        if (!get().canDump()) return;
-        
-        // Find and remove the tile from rack
-        const idx = rack.findIndex(t => t.id === tileId);
-        if (idx === -1) return;
-        
-        const [dumpedTile] = rack.splice(idx, 1);
-        
-        // Add dumped tile back to bag
-        bag.push(dumpedTile);
-        
-        // Shuffle the bag (since we added a tile back)
-        const rng = mulberry32(rngSeed);
-        for (let i = bag.length - 1; i > 0; i--) {
-          const j = Math.floor(rng() * (i + 1));
-          [bag[i], bag[j]] = [bag[j], bag[i]];
+        try {
+          const { rack, bag, rngSeed } = get();
+          if (!get().canDump()) return;
+          
+          // Validate tile ID
+          const validTileId = validateTileId(tileId);
+          if (!validTileId) {
+            console.warn('Invalid tile ID for dump:', tileId);
+            return;
+          }
+          
+          // Find and remove the tile from rack
+          const idx = rack.findIndex(t => t.id === validTileId);
+          if (idx === -1) {
+            console.warn('Tile not found in rack for dump:', validTileId);
+            return;
+          }
+          
+          // Safely remove tile from rack
+          const dumpedTiles = safeArraySplice(rack, idx, 1);
+          if (dumpedTiles.length === 0) {
+            console.warn('Failed to remove tile from rack for dump');
+            return;
+          }
+          
+          const [dumpedTile] = dumpedTiles;
+          
+          // Add dumped tile back to bag
+          bag.push(dumpedTile);
+          
+          // Shuffle the bag (since we added a tile back)
+          const rng = mulberry32(rngSeed);
+          for (let i = bag.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [bag[i], bag[j]] = [bag[j], bag[i]];
+          }
+          
+          // Draw 3 tiles (or as many as available)
+          const drawCount = Math.min(3, bag.length);
+          const drawn = safeArraySplice(bag, 0, drawCount);
+          
+          set({ 
+            rack: [...rack, ...drawn], 
+            bag: [...bag],
+            poolRemaining: bag.length,
+            dumpMode: false // Exit dump mode after dumping
+          });
+          
+          // Validate after dump
+          get().validate();
+        } catch (error) {
+          console.error('Error dumping tile:', error);
         }
-        
-        // Draw 3 tiles
-        const drawn = bag.splice(0, 3);
-        
-        set({ 
-          rack: [...rack, ...drawn], 
-          bag: [...bag],
-          poolRemaining: bag.length,
-          dumpMode: false // Exit dump mode after dumping
-        });
-        
-        // Validate after dump
-        get().validate();
       },
 
       reset() {
@@ -204,17 +305,25 @@ export const useGame = create<GameState>()(
     { 
       name: "ss-local",
       version: 1,
-      migrate: (persistedState: any) => {
+      migrate: (persistedState: unknown) => {
+        // Type guard for persisted state
+        if (!persistedState || typeof persistedState !== 'object') {
+          return persistedState;
+        }
+        
+        const state = persistedState as Record<string, any>;
+        
         // Migrate old peelDraw to drawAmount
-        if (persistedState.rules && 'peelDraw' in persistedState.rules) {
-          persistedState.rules.drawAmount = persistedState.rules.peelDraw || 2;
-          delete persistedState.rules.peelDraw;
+        if (state.rules && typeof state.rules === 'object' && 'peelDraw' in state.rules) {
+          const rules = state.rules as Record<string, any>;
+          rules.drawAmount = rules.peelDraw || 2;
+          delete rules.peelDraw;
         }
         // Ensure drawAmount exists
-        if (persistedState.rules && !persistedState.rules.drawAmount) {
-          persistedState.rules.drawAmount = 2;
+        if (state.rules && typeof state.rules === 'object' && !('drawAmount' in state.rules)) {
+          (state.rules as Record<string, any>).drawAmount = 2;
         }
-        return persistedState;
+        return state;
       }
     }
   )

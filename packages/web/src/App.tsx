@@ -3,6 +3,7 @@ import { useGame } from "./state/gameStore";
 import BoardCanvas from "./components/BoardCanvas";
 import TileRack from "./components/TileRack";
 import Controls from "./components/Controls";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { useKeyboard } from "./hooks/useKeyboard";
 
 export default function App() {
@@ -33,20 +34,34 @@ export default function App() {
   if (!loaded) return <div style={{ padding: 24 }}>Loading…</div>;
 
   return (
-    <div style={{ 
-      display: "grid", 
-      gridTemplateColumns: "1fr 320px", 
-      height: "100vh",
-      width: "100vw",
-      overflow: "hidden",
-      margin: 0,
-      padding: 0,
-      background: "linear-gradient(to bottom, #1A4D1A, #0D2D0D)",
-      fontFamily: "Arial, sans-serif"
-    }}>
-      <div style={{ position: "relative", overflow: "hidden" }}>
-        <BoardCanvas />
-        <TileRack />
+    <ErrorBoundary>
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "1fr 320px", 
+        height: "100vh",
+        width: "100vw",
+        overflow: "hidden",
+        margin: 0,
+        padding: 0,
+        background: "linear-gradient(to bottom, #1A4D1A, #0D2D0D)",
+        fontFamily: "Arial, sans-serif"
+      }}>
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          <ErrorBoundary fallback={
+            <div style={{ padding: '20px', color: '#FAF8F3', textAlign: 'center' }}>
+              <h3>Game Board Error</h3>
+              <p>There was an error with the game board. Please refresh the page.</p>
+            </div>
+          }>
+            <BoardCanvas />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={
+            <div style={{ padding: '20px', color: '#FAF8F3', textAlign: 'center' }}>
+              <p>Tile rack error. Please refresh the page.</p>
+            </div>
+          }>
+            <TileRack />
+          </ErrorBoundary>
         {justDrew && (
           <div style={{
             position: "absolute",
@@ -147,8 +162,16 @@ export default function App() {
             </div>
           </div>
         )}
+        </div>
+        <ErrorBoundary fallback={
+          <div style={{ padding: '20px', color: '#FAF8F3', textAlign: 'center' }}>
+            <h3>Controls Error</h3>
+            <p>There was an error with the game controls. Please refresh the page.</p>
+          </div>
+        }>
+          <Controls />
+        </ErrorBoundary>
       </div>
-      <Controls />
-    </div>
+    </ErrorBoundary>
   );
 }
