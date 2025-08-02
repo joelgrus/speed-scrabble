@@ -23,6 +23,9 @@ export default function Controls() {
         borderLeft: "2px solid #D4C4B0",
         background: "linear-gradient(to bottom, #FAF8F3, #F5F3EE)",
         boxShadow: "inset 2px 0 8px rgba(0, 0, 0, 0.1)",
+        height: "calc(100vh - 50px)", // Account for header height
+        overflowY: "auto",
+        overflowX: "hidden",
       }}
     >
       <h3
@@ -77,8 +80,9 @@ export default function Controls() {
       {justDrew ? (
         <p style={{ fontSize: 16, color: "#4a7", fontWeight: "bold" }}>🎉 Drew 2 tiles!</p>
       ) : (
-        <p style={{ fontSize: 14, color: "#666", fontStyle: "italic" }}>
-          Auto-draws 2 tiles when rack is empty and grid is valid
+        <p style={{ fontSize: 14, color: "#666", fontStyle: "italic", lineHeight: "1.4" }}>
+          Make a single grid of valid words. Use all your tiles to draw two more. 
+          Try to finish all tiles as quickly as possible. Dump unusable tiles for a time penalty.
         </p>
       )}
 
