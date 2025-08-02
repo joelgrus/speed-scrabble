@@ -15,6 +15,7 @@ import {
 import type { Board, Cursor, Rules, Tile, ValidationIssue } from "@ss/shared";
 import { validateCoordinates, validateTileId, safeArraySplice } from "../utils/validation";
 import { errorReporter, getSafeGameState } from "../utils/errorReporting";
+import { notificationService } from "../utils/notifications";
 
 type GameState = {
   rules: Rules;

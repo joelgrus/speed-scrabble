@@ -6,6 +6,7 @@ import Controls from "./components/Controls";
 import ErrorBoundary from "./components/ErrorBoundary";
 import GameErrorBoundary from "./components/GameErrorBoundary";
 import ErrorMonitor from "./components/ErrorMonitor";
+import NotificationToast from "./components/NotificationToast";
 import { useKeyboard } from "./hooks/useKeyboard";
 import { createShareUrl } from "@ss/shared";
 import { errorReporter, getSafeGameState } from "./utils/errorReporting";
@@ -120,19 +121,25 @@ export default function App() {
                 justifyContent: "center",
                 zIndex: 1000,
                 animation: "fadeIn 0.5s ease",
+                overflow: "auto",
+                padding: "20px",
               }}
             >
               <div
                 style={{
                   background: "linear-gradient(to bottom, #FAF8F3, #F5F3EE)",
                   borderRadius: 20,
-                  padding: 50,
+                  padding: "30px 40px",
                   textAlign: "center",
                   boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
-                  maxWidth: 500,
+                  maxWidth: "90vw",
+                  maxHeight: "90vh",
+                  width: "100%",
+                  minWidth: 300,
                   border: "2px solid #D4C4B0",
                   transform: "scale(1)",
                   animation: "victoryPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+                  overflow: "auto",
                 }}
               >
                 <h1
@@ -274,6 +281,7 @@ export default function App() {
           <Controls />
         </GameErrorBoundary>
       </div>
+      <NotificationToast />
       <ErrorMonitor />
     </ErrorBoundary>
   );

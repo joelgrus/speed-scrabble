@@ -135,27 +135,32 @@ export function SharePage() {
               width: 'fit-content',
               gridTemplateColumns: `repeat(${width}, 1fr)`,
               maxWidth: '100%',
-              overflow: 'auto'
+              overflow: 'auto',
+              border: '2px solid #ccc',
+              borderRadius: '4px'
             }}
           >
             {Array.from(grid).map((char, index) => {
               const isEmpty = char === '.';
+              // Better responsive calculation - ensure minimum readable size
+              const maxCellSize = Math.min(40, Math.floor((window.innerWidth - 100) / width));
+              const cellSize = Math.max(16, maxCellSize); // Never smaller than 16px
+              const fontSize = Math.max(10, Math.floor(cellSize * 0.6)); // Proportional font
+              
               return (
                 <div
                   key={index}
                   style={{
-                    width: Math.min(32, Math.floor((window.innerWidth - 64) / width)) + 'px',
-                    height: Math.min(32, Math.floor((window.innerWidth - 64) / width)) + 'px',
-                    minWidth: '20px',
-                    minHeight: '20px',
+                    width: cellSize + 'px',
+                    height: cellSize + 'px',
                     border: '1px solid',
-                    borderColor: isEmpty ? '#ccc' : '#8B6B47',
+                    borderColor: isEmpty ? '#ddd' : '#8B6B47',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: Math.min(14, Math.floor((window.innerWidth - 64) / width * 0.6)) + 'px',
+                    fontSize: fontSize + 'px',
                     fontWeight: 'bold',
-                    background: isEmpty ? '#f5f5f5' : '#FAF8F3',
+                    background: isEmpty ? '#f8f8f8' : '#FAF8F3',
                     color: isEmpty ? 'transparent' : '#3E2723',
                     boxSizing: 'border-box'
                   }}

@@ -40,12 +40,21 @@ export function validateTileId(tileId: unknown): string | null {
     return null;
   }
 
-  if (tileId.length === 0) {
+  if (tileId.length === 0 || tileId.length > VALIDATION_BOUNDS.maxStringLength) {
     return null;
   }
 
   // Check format: should be 't' followed by digits
   if (!/^t\d+$/.test(tileId)) {
+    return null;
+  }
+
+  // Extract and validate the numeric part
+  const numericPart = tileId.slice(1);
+  const tileNumber = parseInt(numericPart, 10);
+  
+  // Ensure it's a reasonable tile number (not negative, not too large)
+  if (isNaN(tileNumber) || tileNumber < 0 || tileNumber > 999999) {
     return null;
   }
 
@@ -116,6 +125,11 @@ export function safeArraySplice<T>(array: T[], start: number, deleteCount: numbe
     throw new Error("First argument must be an array");
   }
 
+  // Check array size bounds
+  if (array.length > VALIDATION_BOUNDS.maxArrayLength) {
+    throw new Error(`Array too large: ${array.length} > ${VALIDATION_BOUNDS.maxArrayLength}`);
+  }
+
   if (!Number.isInteger(start)) {
     throw new Error("Start index must be an integer");
   }
@@ -124,8 +138,14 @@ export function safeArraySplice<T>(array: T[], start: number, deleteCount: numbe
     throw new Error("Delete count must be a non-negative integer");
   }
 
+  // Bounds check for start index
   if (start < 0 || start >= array.length) {
     return []; // Nothing to remove
+  }
+
+  // Prevent excessive deletion attempts
+  if (deleteCount > VALIDATION_BOUNDS.maxArrayLength) {
+    throw new Error(`Delete count too large: ${deleteCount} > ${VALIDATION_BOUNDS.maxArrayLength}`);
   }
 
   const actualDeleteCount = Math.min(deleteCount, array.length - start);
