@@ -16,11 +16,21 @@ export default function Controls() {
   const justDrew = useGame(s => s.justDrew);
 
   return (
-    <div style={{ padding: 16, borderLeft: "1px solid #eee" }}>
-      <h3>Game</h3>
-      <p>Pool: {pool}</p>
-      <p>Tiles: {Object.keys(board).length} placed, {rack.length} in rack</p>
-      <p>Direction: <strong>{orientation === "H" ? "Horizontal →" : "Vertical ↓"}</strong></p>
+    <div style={{ 
+      padding: 20, 
+      borderLeft: "2px solid #D4C4B0",
+      background: "linear-gradient(to bottom, #FAF8F3, #F5F3EE)",
+      boxShadow: "inset 2px 0 8px rgba(0, 0, 0, 0.1)"
+    }}>
+      <h3 style={{ 
+        margin: "0 0 16px 0", 
+        color: "#3E2723", 
+        fontFamily: "Georgia, serif",
+        fontSize: "24px"
+      }}>Game</h3>
+      <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Pool: <strong>{pool}</strong></p>
+      <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Tiles: <strong>{Object.keys(board).length}</strong> placed, <strong>{rack.length}</strong> in rack</p>
+      <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>Direction: <strong style={{ color: "#8B6B47" }}>{orientation === "H" ? "Horizontal →" : "Vertical ↓"}</strong></p>
       
       {invalidWords.length > 0 || (!connected && Object.keys(board).length > 1) ? (
         <div style={{ color: "#f44", fontSize: 14 }}>
@@ -54,8 +64,31 @@ export default function Controls() {
         </p>
       )}
       
-      <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={reset} style={{ padding: "8px 12px" }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+        <button 
+          onClick={reset} 
+          style={{ 
+            padding: "10px 16px",
+            background: "linear-gradient(to bottom, #8B6B47, #6D5437)",
+            color: "#FAF8F3",
+            border: "none",
+            borderRadius: "6px",
+            boxShadow: "0 3px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+            cursor: "pointer",
+            fontFamily: "Arial, sans-serif",
+            fontWeight: "bold",
+            fontSize: "14px",
+            transition: "all 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 3px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+          }}
+        >
           Reset Game
         </button>
         
@@ -63,11 +96,35 @@ export default function Controls() {
           onClick={toggleDumpMode}
           disabled={!canDump}
           style={{ 
-            padding: "8px 12px",
-            background: dumpMode ? "#f44" : canDump ? "#fff" : "#eee",
-            color: dumpMode ? "#fff" : "#000",
-            border: dumpMode ? "1px solid #f44" : "1px solid #ccc",
-            cursor: canDump ? "pointer" : "not-allowed"
+            padding: "10px 16px",
+            background: dumpMode 
+              ? "linear-gradient(to bottom, #DC143C, #B91C3C)" 
+              : canDump 
+                ? "linear-gradient(to bottom, #FAF8F3, #F0EDE6)" 
+                : "linear-gradient(to bottom, #E5E5E5, #D1D1D1)",
+            color: dumpMode ? "#FAF8F3" : canDump ? "#3E2723" : "#999",
+            border: "none",
+            borderRadius: "6px",
+            boxShadow: canDump 
+              ? "0 3px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+              : "0 1px 3px rgba(0, 0, 0, 0.1)",
+            cursor: canDump ? "pointer" : "not-allowed",
+            fontFamily: "Arial, sans-serif",
+            fontWeight: "bold",
+            fontSize: "14px",
+            transition: "all 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            if (canDump) {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (canDump) {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 3px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+            }
           }}
         >
           {dumpMode ? "Cancel Dump" : "Dump (1→3)"}
@@ -79,9 +136,14 @@ export default function Controls() {
           Click a tile in your rack to dump it
         </p>
       )}
-      <hr/>
-      <h4>Controls</h4>
-      <p style={{ fontSize: 12, color: "#666" }}>
+      <hr style={{ border: "none", borderTop: "1px solid #D4C4B0", margin: "20px 0" }}/>
+      <h4 style={{ 
+        color: "#3E2723", 
+        fontFamily: "Georgia, serif",
+        fontSize: "20px",
+        margin: "0 0 12px 0"
+      }}>Controls</h4>
+      <p style={{ fontSize: 13, color: "#8B6B47", lineHeight: "1.5" }}>
         <strong>Place tiles:</strong><br/>
         • Click grid to move cursor<br/>
         • Type letters or click rack tiles<br/>

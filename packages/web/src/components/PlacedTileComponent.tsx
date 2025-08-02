@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Group, Rect, Text } from "react-konva";
-import { PlacedTile } from "@ss/shared";
+import { PlacedTile, LETTER_VALUES } from "@ss/shared";
 
 interface PlacedTileComponentProps {
   tile: PlacedTile;
@@ -15,6 +15,7 @@ const CELL = 40;
 
 export default function PlacedTileComponent({ tile, x, y, isInvalid, onRemove, onCursorMove }: PlacedTileComponentProps) {
   const [isLongPress, setIsLongPress] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout>();
   
   const handleTileClick = (e: any) => {
@@ -65,34 +66,95 @@ export default function PlacedTileComponent({ tile, x, y, isInvalid, onRemove, o
     setIsLongPress(false);
   };
   
+  const letterValue = LETTER_VALUES[tile.letter as keyof typeof LETTER_VALUES];
+  const tileScale = isLongPress ? 1.1 : isHovered ? 1.05 : 1;
+  const tileLift = isLongPress ? -2 : isHovered ? -1 : 0;
+  
   return (
     <Group 
       x={x} 
-      y={y}
+      y={y + tileLift}
       onClick={handleTileClick}
       onContextMenu={handleContextMenu}
       onMouseDown={handleTileClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Simplified shadow - only render when needed */}
+      {(isHovered || isLongPress || isInvalid) && (
+        <Rect 
+          width={CELL} 
+          height={CELL} 
+          x={3}
+          y={3}
+          fill={isInvalid ? "rgba(255, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.25)"}
+          cornerRadius={6}
+          scaleX={tileScale}
+          scaleY={tileScale}
+          offsetX={isLongPress ? CELL * 0.05 : 0}
+          offsetY={isLongPress ? CELL * 0.05 : 0}
+        />
+      )}
+      
+      {/* Main tile - simplified styling */}
       <Rect 
         width={CELL} 
         height={CELL} 
-        fill="#fff" 
-        stroke={isInvalid ? "#f44" : "#333"} 
-        strokeWidth={2}
-        scaleX={isLongPress ? 1.1 : 1}
-        scaleY={isLongPress ? 1.1 : 1}
+        fill={isInvalid ? "#FF6B6B" : "#FAF8F3"}
+        stroke={isInvalid ? "#FF0000" : "#D4C4B0"} 
+        strokeWidth={isInvalid ? 3 : 1}
+        cornerRadius={6}
+        scaleX={tileScale}
+        scaleY={tileScale}
         offsetX={isLongPress ? CELL * 0.05 : 0}
         offsetY={isLongPress ? CELL * 0.05 : 0}
       />
+      
+      {/* Top highlight - only when not invalid */}
+      {!isInvalid && (
+        <Rect 
+          width={CELL - 4} 
+          height={2}
+          x={2}
+          y={2}
+          fill="rgba(255, 255, 255, 0.6)"
+          cornerRadius={[4, 4, 0, 0]}
+          scaleX={tileScale}
+          scaleY={tileScale}
+          offsetX={isLongPress ? CELL * 0.05 : 0}
+          offsetY={isLongPress ? CELL * 0.05 : 0}
+        />
+      )}
+      
+      {/* Letter text with serif font */}
       <Text 
         text={tile.letter} 
-        fontSize={24} 
-        x={12} 
-        y={8}
-        scaleX={isLongPress ? 1.1 : 1}
-        scaleY={isLongPress ? 1.1 : 1}
+        fontSize={26} 
+        fontFamily="Georgia, serif"
+        fontStyle="bold"
+        fill="#3E2723"
+        x={CELL / 2}
+        y={CELL / 2 - 2}
+        offsetX={13}
+        offsetY={13}
+        scaleX={tileScale}
+        scaleY={tileScale}
+      />
+      
+      {/* Point value in bottom right */}
+      <Text 
+        text={letterValue.toString()} 
+        fontSize={10} 
+        fontFamily="Arial, sans-serif"
+        fill="#8B6B47"
+        x={CELL - 8}
+        y={CELL - 10}
+        scaleX={tileScale}
+        scaleY={tileScale}
+        offsetX={isLongPress ? CELL * 0.05 : 0}
+        offsetY={isLongPress ? CELL * 0.05 : 0}
       />
     </Group>
   );

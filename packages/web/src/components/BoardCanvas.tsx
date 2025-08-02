@@ -89,12 +89,37 @@ export default function BoardCanvas() {
       draggable
     >
       <Layer>
-        {/* Grid */}
-        {[...Array(GRID_SIZE*2+1)].map((_, i) => (
-          <Rect key={`v${i}`} x={i*CELL} y={0} width={1} height={GRID_SIZE*2*CELL} fill="#f0f0f0" />
+        {/* Felt background - covers much larger area */}
+        <Rect 
+          x={-GRID_SIZE*CELL} 
+          y={-GRID_SIZE*CELL} 
+          width={GRID_SIZE*4*CELL} 
+          height={GRID_SIZE*4*CELL} 
+          fill="#2C5F2D"
+        />
+        
+        {/* Simplified grid using fewer elements */}
+        {/* Vertical lines */}
+        {[...Array(GRID_SIZE*4+1)].map((_, i) => (
+          <Rect 
+            key={`v${i}`} 
+            x={(i-GRID_SIZE)*CELL} 
+            y={-GRID_SIZE*CELL} 
+            width={0.5} 
+            height={GRID_SIZE*4*CELL} 
+            fill="rgba(255, 255, 255, 0.08)" 
+          />
         ))}
-        {[...Array(GRID_SIZE*2+1)].map((_, i) => (
-          <Rect key={`h${i}`} x={0} y={i*CELL} width={GRID_SIZE*2*CELL} height={1} fill="#f0f0f0" />
+        {/* Horizontal lines */}
+        {[...Array(GRID_SIZE*4+1)].map((_, i) => (
+          <Rect 
+            key={`h${i}`} 
+            x={-GRID_SIZE*CELL} 
+            y={(i-GRID_SIZE)*CELL} 
+            width={GRID_SIZE*4*CELL} 
+            height={0.5} 
+            fill="rgba(255, 255, 255, 0.08)" 
+          />
         ))}
       </Layer>
 
@@ -120,16 +145,23 @@ export default function BoardCanvas() {
             width={CELL}
             height={CELL}
             fill="transparent"
-            stroke="rgba(0, 100, 255, 1)"
-            strokeWidth={3}
+            stroke="#FFD700"
+            strokeWidth={2}
+            shadowColor="rgba(0, 0, 0, 0.3)"
+            shadowBlur={4}
+            shadowOffset={{x: 0, y: 2}}
           />
           {/* Orientation indicator */}
           <Rect
-            x={cursor.orient === "H" ? CELL - 10 : CELL/2 - 5}
-            y={cursor.orient === "H" ? CELL/2 - 5 : CELL - 10}
-            width={cursor.orient === "H" ? 20 : 10}
-            height={cursor.orient === "H" ? 10 : 20}
-            fill="rgba(0, 100, 255, 0.8)"
+            x={cursor.orient === "H" ? CELL - 12 : CELL/2 - 6}
+            y={cursor.orient === "H" ? CELL/2 - 6 : CELL - 12}
+            width={cursor.orient === "H" ? 24 : 12}
+            height={cursor.orient === "H" ? 12 : 24}
+            fill="#FFD700"
+            cornerRadius={2}
+            shadowColor="rgba(0, 0, 0, 0.3)"
+            shadowBlur={2}
+            shadowOffset={{x: 0, y: 1}}
           />
         </Group>
       </Layer>

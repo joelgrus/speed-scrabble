@@ -40,7 +40,9 @@ export default function App() {
       width: "100vw",
       overflow: "hidden",
       margin: 0,
-      padding: 0
+      padding: 0,
+      background: "linear-gradient(to bottom, #1A4D1A, #0D2D0D)",
+      fontFamily: "Arial, sans-serif"
     }}>
       <div style={{ position: "relative", overflow: "hidden" }}>
         <BoardCanvas />
@@ -51,17 +53,20 @@ export default function App() {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            fontSize: 48,
+            fontSize: 52,
             fontWeight: "bold",
-            color: "#4a7",
-            background: "rgba(255, 255, 255, 0.95)",
-            padding: "20px 40px",
-            borderRadius: 12,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-            animation: "fadeInOut 1s ease",
-            pointerEvents: "none"
+            fontFamily: "Georgia, serif",
+            color: "#FFD700",
+            background: "linear-gradient(to bottom, #FAF8F3, #F0EDE6)",
+            padding: "25px 50px",
+            borderRadius: 16,
+            border: "2px solid #D4C4B0",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+            animation: "fadeInOut 1.5s ease",
+            pointerEvents: "none",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.2)"
           }}>
-            +2 TILES!
+            🎲 +2 TILES! 🎲
           </div>
         )}
         
@@ -72,38 +77,72 @@ export default function App() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: "rgba(0, 0, 0, 0.8)",
+            background: "rgba(0, 0, 0, 0.85)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000
+            zIndex: 1000,
+            animation: "fadeIn 0.5s ease"
           }}>
             <div style={{
-              background: "white",
-              borderRadius: 16,
-              padding: 40,
+              background: "linear-gradient(to bottom, #FAF8F3, #F5F3EE)",
+              borderRadius: 20,
+              padding: 50,
               textAlign: "center",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-              maxWidth: 400
+              boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+              maxWidth: 500,
+              border: "2px solid #D4C4B0",
+              transform: "scale(1)",
+              animation: "victoryPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)"
             }}>
-              <h1 style={{ fontSize: 48, margin: "0 0 20px", color: "#4a7" }}>🎉 YOU WIN! 🎉</h1>
-              <p style={{ fontSize: 24, margin: "0 0 10px" }}>Amazing!</p>
-              <p style={{ fontSize: 18, color: "#666", margin: "0 0 30px" }}>
-                You placed all {Object.keys(board).length} tiles in a valid crossword!
+              <h1 style={{ 
+                fontSize: 56, 
+                margin: "0 0 20px", 
+                color: "#FFD700",
+                fontFamily: "Georgia, serif",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+                fontWeight: "bold"
+              }}>🎉 VICTORY! 🎉</h1>
+              <p style={{ 
+                fontSize: 28, 
+                margin: "0 0 15px",
+                color: "#3E2723",
+                fontFamily: "Georgia, serif"
+              }}>Magnificent!</p>
+              <p style={{ 
+                fontSize: 20, 
+                color: "#8B6B47", 
+                margin: "0 0 35px",
+                lineHeight: "1.4"
+              }}>
+                You successfully placed all <strong>{Object.keys(board).length} tiles</strong><br/>
+                in a perfect crossword puzzle!
               </p>
               <button 
                 onClick={reset}
                 style={{
-                  padding: "12px 32px",
-                  fontSize: 18,
-                  background: "#4a7",
-                  color: "white",
+                  padding: "16px 40px",
+                  fontSize: 20,
+                  background: "linear-gradient(to bottom, #8B6B47, #6D5437)",
+                  color: "#FAF8F3",
                   border: "none",
-                  borderRadius: 8,
-                  cursor: "pointer"
+                  borderRadius: 12,
+                  cursor: "pointer",
+                  fontFamily: "Arial, sans-serif",
+                  fontWeight: "bold",
+                  boxShadow: "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 6px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
                 }}
               >
-                Play Again
+                🎲 Play Again
               </button>
             </div>
           </div>

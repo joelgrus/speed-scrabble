@@ -4,3 +4,4 @@ export * from "./rng";
 export * from "./bag";
 export * from "./board";
 export * from "./validator";
+export * from "./letterValues";
