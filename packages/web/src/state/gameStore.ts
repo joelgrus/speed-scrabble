@@ -10,6 +10,7 @@ import {
   DUMP_CONFIG,
   PERFORMANCE_CONFIG,
   ANIMATION_DURATIONS,
+  TIMED_GAME_CONFIG,
 } from "@ss/shared";
 import type { Board, Cursor, Rules, Tile, ValidationIssue } from "@ss/shared";
 import { validateCoordinates, validateTileId, safeArraySplice } from "../utils/validation";
@@ -30,6 +31,12 @@ type GameState = {
   justDrew: boolean;
   gameWon: boolean;
   dumpMode: boolean;
+  
+  // Timer state  
+  gameStartTime: number | null;
+  currentTime: number;
+  dumpPenalties: number; // Total penalty seconds from dumps
+  isGameActive: boolean;
 
   init(dict: Set<string>, seed?: string): void;
   draw(n: number): void;
@@ -43,6 +50,13 @@ type GameState = {
   dumpTile(tileId: string): void;
   canDump(): boolean;
   reset(): void;
+  
+  // Timer methods
+  startGame(): void;
+  updateTimer(): void;
+  endGame(): void;
+  addDumpPenalty(): void;
+  getTotalTime(): number;
 };
 
 const DEFAULT_RULES: Rules = DEFAULT_GAME_RULES;
@@ -65,6 +79,12 @@ export const useGame = create<GameState>()(
       justDrew: false,
       gameWon: false,
       dumpMode: false,
+      
+      // Timer state
+      gameStartTime: null,
+      currentTime: 0,
+      dumpPenalties: 0,
+      isGameActive: false,
 
       init(dict, seed = "local") {
         const rng = mulberry32(seedFromString(seed));
@@ -84,6 +104,12 @@ export const useGame = create<GameState>()(
           justDrew: false,
           gameWon: false,
           dumpMode: false,
+          
+          // Start the game timer immediately  
+          gameStartTime: Date.now(),
+          currentTime: 0,
+          dumpPenalties: 0,
+          isGameActive: true,
         });
       },
 
@@ -222,7 +248,7 @@ export const useGame = create<GameState>()(
 
         // Check for win condition
         if (rack.length === 0 && bag.length === 0 && res.ok) {
-          set({ gameWon: true });
+          get().endGame();
         }
 
         // Auto-draw if conditions are met - debounced to avoid rapid calls
@@ -278,6 +304,9 @@ export const useGame = create<GameState>()(
             return;
           }
 
+          // Add dump penalty first
+          get().addDumpPenalty();
+
           // Safely remove tile from rack
           const dumpedTiles = safeArraySplice(rack, idx, 1);
           if (dumpedTiles.length === 0) {
@@ -320,6 +349,70 @@ export const useGame = create<GameState>()(
         // Generate new random seed for each reset
         const newSeed = `game-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         get().init(dict, newSeed);
+      },
+
+      // Timer methods
+      startGame() {
+        try {
+          const now = Date.now();
+          set({
+            gameStartTime: now,
+            currentTime: 0,
+            dumpPenalties: 0,
+            isGameActive: true,
+          });
+        } catch (error) {
+          console.error("Error starting game:", error);
+        }
+      },
+
+      updateTimer() {
+        try {
+          const { gameStartTime, isGameActive } = get();
+          
+          if (!isGameActive || !gameStartTime) {
+            return;
+          }
+
+          const now = Date.now();
+          const elapsed = Math.floor((now - gameStartTime) / 1000);
+          
+          set({ currentTime: elapsed });
+        } catch (error) {
+          console.error("Error updating timer:", error);
+        }
+      },
+
+      endGame() {
+        try {
+          set({
+            isGameActive: false,
+            gameWon: true,
+          });
+        } catch (error) {
+          console.error("Error ending game:", error);
+        }
+      },
+
+      addDumpPenalty() {
+        try {
+          const { dumpPenalties } = get();
+          set({
+            dumpPenalties: dumpPenalties + TIMED_GAME_CONFIG.dumpTimePenalty,
+          });
+        } catch (error) {
+          console.error("Error adding dump penalty:", error);
+        }
+      },
+
+      getTotalTime() {
+        try {
+          const { currentTime, dumpPenalties } = get();
+          return currentTime + dumpPenalties;
+        } catch (error) {
+          console.error("Error calculating total time:", error);
+          return 0;
+        }
       },
     }),
     {

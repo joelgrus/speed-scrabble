@@ -93,7 +93,7 @@ export default function BoardCanvas() {
     <Stage
       ref={stageRef}
       width={window.innerWidth - 320}
-      height={window.innerHeight - 64}
+      height={window.innerHeight - 80}
       onClick={handleGridClick}
       onWheel={handleWheel}
       onDragEnd={handleDragEnd}

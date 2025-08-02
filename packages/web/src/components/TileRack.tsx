@@ -27,17 +27,24 @@ export default function TileRack() {
   return (
     <div
       style={{
-        position: "absolute",
+        position: "fixed",
         bottom: 0,
         left: 0,
         right: 320,
-        padding: 16,
+        height: 80,
         background: "linear-gradient(to bottom, #8B6B47, #6D5437)",
         borderTop: "2px solid #5A4529",
         boxShadow: "inset 0 2px 8px rgba(0, 0, 0, 0.3)",
+        zIndex: 10,
       }}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+      <div style={{ 
+        position: "absolute",
+        top: 16,
+        left: 20,
+        display: "flex", 
+        gap: 12
+      }}>
         {rack.map(t => {
           const letterValue = LETTER_VALUES[t.letter as keyof typeof LETTER_VALUES];
           const isAnimating = animatingTiles.has(t.id);
@@ -64,10 +71,9 @@ export default function TileRack() {
                     ? "0 4px 12px rgba(244, 67, 54, 0.3)"
                     : "0 4px 8px rgba(0, 0, 0, 0.2)",
                 transform: isAnimating
-                  ? "scale(1.15) translateY(-2px)"
-                  : dumpMode
-                    ? "scale(1.05)"
-                    : "scale(1)",
+                  ? "scale(1.15)"
+                  : "scale(1)",
+                transformOrigin: "center center",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 cursor: "pointer",
                 position: "relative",
@@ -79,7 +85,7 @@ export default function TileRack() {
               }}
               onMouseEnter={e => {
                 if (!isAnimating && !dumpMode) {
-                  e.currentTarget.style.transform = "scale(1.05) translateY(-1px)";
+                  e.currentTarget.style.transform = "scale(1.05)";
                   e.currentTarget.style.boxShadow = "0 6px 12px rgba(0, 0, 0, 0.25)";
                 }
               }}

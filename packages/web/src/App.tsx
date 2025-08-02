@@ -13,6 +13,7 @@ export default function App() {
   const gameWon = useGame(s => s.gameWon);
   const reset = useGame(s => s.reset);
   const board = useGame(s => s.board);
+  const getTotalTime = useGame(s => s.getTotalTime);
   const [loaded, setLoaded] = useState(false);
 
   useKeyboard();
@@ -147,19 +148,44 @@ export default function App() {
                     fontFamily: "Georgia, serif",
                   }}
                 >
-                  Magnificent!
+                  Magnificent Speed!
                 </p>
                 <p
                   style={{
                     fontSize: 20,
                     color: "#8B6B47",
-                    margin: "0 0 35px",
+                    margin: "0 0 20px",
                     lineHeight: "1.4",
                   }}
                 >
-                  You successfully placed all <strong>{Object.keys(board).length} tiles</strong>
-                  <br />
-                  in a perfect crossword puzzle!
+                  You placed all <strong>{Object.keys(board).length} tiles</strong> in a perfect crossword puzzle!
+                </p>
+                <div
+                  style={{
+                    fontSize: 36,
+                    fontWeight: "bold",
+                    color: "#4CAF50",
+                    fontFamily: "monospace",
+                    marginBottom: "20px",
+                    textShadow: "0 0 10px #4CAF5040",
+                  }}
+                >
+                  {(() => {
+                    const totalTime = getTotalTime();
+                    const minutes = Math.floor(totalTime / 60);
+                    const seconds = totalTime % 60;
+                    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+                  })()}
+                </div>
+                <p
+                  style={{
+                    fontSize: 16,
+                    color: "#8B6B47",
+                    margin: "0 0 35px",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Challenge yourself to beat this time!
                 </p>
                 <button
                   onClick={reset}

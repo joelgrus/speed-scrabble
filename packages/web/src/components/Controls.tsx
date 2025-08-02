@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useGame } from "../state/gameStore";
+import Timer from "./Timer";
 
 export default function Controls() {
   const pool = useGame(s => s.poolRemaining);
@@ -34,6 +35,9 @@ export default function Controls() {
       >
         Game
       </h3>
+      
+      <Timer />
+      
       <p style={{ color: "#3E2723", fontSize: "16px", margin: "8px 0" }}>
         Pool: <strong>{pool}</strong>
       </p>
@@ -48,25 +52,27 @@ export default function Controls() {
         </strong>
       </p>
 
-      {invalidWords.length > 0 || (!connected && Object.keys(board).length > 1) ? (
-        <div style={{ color: "#f44", fontSize: 14 }}>
-          {invalidWords.length > 0 && (
-            <>
-              <p>⚠️ Invalid words ({invalidCells.size} tiles):</p>
-              <ul style={{ margin: "4px 0", paddingLeft: "16px" }}>
-                {invalidWords.map((issue, i) => (
-                  <li key={i} style={{ fontSize: 12 }}>
-                    "{issue.word}"
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          {!connected && Object.keys(board).length > 1 && <p>⚠️ Tiles must be connected</p>}
-        </div>
-      ) : Object.keys(board).length > 0 ? (
-        <p style={{ color: "#4a7", fontSize: 14 }}>✅ All words valid and connected</p>
-      ) : null}
+      <div style={{ minHeight: 60, color: "#f44", fontSize: 14 }}>
+        {invalidWords.length > 0 || (!connected && Object.keys(board).length > 1) ? (
+          <>
+            {invalidWords.length > 0 && (
+              <>
+                <p>⚠️ Invalid words ({invalidCells.size} tiles):</p>
+                <ul style={{ margin: "4px 0", paddingLeft: "16px" }}>
+                  {invalidWords.map((issue, i) => (
+                    <li key={i} style={{ fontSize: 12 }}>
+                      "{issue.word}"
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {!connected && Object.keys(board).length > 1 && <p>⚠️ Tiles must be connected</p>}
+          </>
+        ) : Object.keys(board).length > 0 ? (
+          <p style={{ color: "#4a7", fontSize: 14 }}>✅ All words valid and connected</p>
+        ) : null}
+      </div>
 
       {justDrew ? (
         <p style={{ fontSize: 16, color: "#4a7", fontWeight: "bold" }}>🎉 Drew 2 tiles!</p>
@@ -146,6 +152,7 @@ export default function Controls() {
           {dumpMode ? "Cancel Dump" : "Dump (1→3)"}
         </button>
       </div>
+
 
       {dumpMode && (
         <p style={{ fontSize: 13, color: "#f44", marginTop: 8 }}>

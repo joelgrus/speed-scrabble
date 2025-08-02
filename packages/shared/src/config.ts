@@ -106,7 +106,7 @@ export const TIMED_GAME_CONFIG = {
   /** Warning threshold in seconds (when timer turns red) */
   warningThreshold: 30,
   /** Time penalty per dump in seconds */
-  dumpTimePenalty: 10,
+  dumpTimePenalty: 30,
   /** Maximum number of dumps allowed per game */
   maxDumpsPerGame: 3,
   /** Bonus points per second remaining */
