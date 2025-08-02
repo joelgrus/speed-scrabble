@@ -6,11 +6,12 @@ export function useKeyboard() {
   const cursor = useGame(s => s.cursor);
   const rack = useGame(s => s.rack);
   const placeTile = useGame(s => s.placeTile);
+  const removeTile = useGame(s => s.removeTile);
   
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      // Prevent space from scrolling the page
-      if (e.key === " ") {
+      // Prevent space and backspace from scrolling the page
+      if (e.key === " " || e.key === "Backspace") {
         e.preventDefault();
       }
       
@@ -25,6 +26,11 @@ export function useKeyboard() {
         setCursor({ orient: cursor.orient === "H" ? "V" : "H" });
       }
       
+      // Backspace to remove tile at cursor
+      if (e.key === "Backspace") {
+        removeTile(cursor.pos.x, cursor.pos.y);
+      }
+      
       // Letter keys to place tiles
       const letter = e.key.toUpperCase();
       if (letter.length === 1 && letter >= "A" && letter <= "Z") {
@@ -37,5 +43,5 @@ export function useKeyboard() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cursor.pos.x, cursor.pos.y, cursor.orient, setCursor, rack, placeTile]);
+  }, [cursor.pos.x, cursor.pos.y, cursor.orient, setCursor, rack, placeTile, removeTile]);
 }

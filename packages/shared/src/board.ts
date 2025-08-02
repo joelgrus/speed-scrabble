@@ -29,6 +29,39 @@ function collectWord(board: Board, x: number, y: number, dx: number, dy: number)
   return { word: letters.join(""), cells };
 }
 
+// Check if all tiles form a single connected component
+export function isConnected(board: Board): boolean {
+  const tiles = Object.values(board);
+  if (tiles.length <= 1) return true;
+  
+  // BFS to find connected component starting from first tile
+  const visited = new Set<string>();
+  const queue = [tiles[0]];
+  visited.add(key(tiles[0].x, tiles[0].y));
+  
+  while (queue.length > 0) {
+    const tile = queue.shift()!;
+    // Check all 4 adjacent cells
+    const neighbors = [
+      [tile.x + 1, tile.y],
+      [tile.x - 1, tile.y], 
+      [tile.x, tile.y + 1],
+      [tile.x, tile.y - 1]
+    ];
+    
+    for (const [nx, ny] of neighbors) {
+      const neighborKey = key(nx, ny);
+      if (board[neighborKey] && !visited.has(neighborKey)) {
+        visited.add(neighborKey);
+        queue.push(board[neighborKey]);
+      }
+    }
+  }
+  
+  // All tiles should be visited if connected
+  return visited.size === tiles.length;
+}
+
 // Extract all across & down words (length >= 2)
 export function extractWords(board: Board) {
   const seen = new Set<string>();

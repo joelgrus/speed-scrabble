@@ -1,7 +1,8 @@
-import React, { useMemo, useRef, useEffect } from "react";
-import { Stage, Layer, Rect, Group, Text } from "react-konva";
+import React, { useMemo, useEffect, useState, useRef } from "react";
+import { Stage, Layer, Rect, Group } from "react-konva";
 import { useGame } from "../state/gameStore";
 import { key, PlacedTile } from "@ss/shared";
+import PlacedTileComponent from "./PlacedTileComponent";
 
 const CELL = 40;
 const GRID_SIZE = 25; // visible span around origin
@@ -12,8 +13,14 @@ export default function BoardCanvas() {
   const validate = useGame(s => s.validate);
   const cursor = useGame(s => s.cursor);
   const setCursor = useGame(s => s.setCursor);
+  const removeTile = useGame(s => s.removeTile);
 
-  // center origin
+  const stageRef = useRef<any>();
+  const [stageScale, setStageScale] = useState(1);
+  const [stageX, setStageX] = useState(0);
+  const [stageY, setStageY] = useState(0);
+
+  // Dynamic origin based on stage position
   const originX = GRID_SIZE * CELL;
   const originY = GRID_SIZE * CELL;
 
@@ -27,40 +34,83 @@ export default function BoardCanvas() {
   const handleGridClick = (e: any) => {
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
-    const gridX = Math.floor((point.x - originX) / CELL);
-    const gridY = Math.floor((point.y - originY) / CELL);
+    // Account for stage transform
+    const gridX = Math.floor(((point.x - stageX) / stageScale - originX) / CELL);
+    const gridY = Math.floor(((point.y - stageY) / stageScale - originY) / CELL);
     setCursor({ pos: { x: gridX, y: gridY } });
+  };
+
+  const handleWheel = (e: any) => {
+    e.evt.preventDefault();
+    
+    const stage = e.target.getStage();
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    
+    // Zoom factor
+    const scaleBy = 1.1;
+    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    
+    // Clamp zoom
+    const clampedScale = Math.max(0.3, Math.min(3, newScale));
+    
+    const newPos = {
+      x: pointer.x - mousePointTo.x * clampedScale,
+      y: pointer.y - mousePointTo.y * clampedScale,
+    };
+    
+    setStageScale(clampedScale);
+    setStageX(newPos.x);
+    setStageY(newPos.y);
+  };
+
+  const handleDragEnd = (e: any) => {
+    setStageX(e.target.x());
+    setStageY(e.target.y());
   };
 
   return (
     <Stage 
+      ref={stageRef}
       width={window.innerWidth - 320} 
-      height={window.innerHeight - 120}
+      height={window.innerHeight - 64}
       onClick={handleGridClick}
+      onWheel={handleWheel}
+      onDragEnd={handleDragEnd}
+      scaleX={stageScale}
+      scaleY={stageScale}
+      x={stageX}
+      y={stageY}
+      draggable
     >
       <Layer>
         {/* Grid */}
         {[...Array(GRID_SIZE*2+1)].map((_, i) => (
-          <Rect key={`v${i}`} x={i*CELL} y={0} width={1} height={window.innerHeight} fill="#f0f0f0" />
+          <Rect key={`v${i}`} x={i*CELL} y={0} width={1} height={GRID_SIZE*2*CELL} fill="#f0f0f0" />
         ))}
         {[...Array(GRID_SIZE*2+1)].map((_, i) => (
-          <Rect key={`h${i}`} x={0} y={i*CELL} width={window.innerWidth} height={1} fill="#f0f0f0" />
+          <Rect key={`h${i}`} x={0} y={i*CELL} width={GRID_SIZE*2*CELL} height={1} fill="#f0f0f0" />
         ))}
       </Layer>
 
       <Layer>
         {/* Placed tiles */}
-        {tiles.map((t: PlacedTile) => {
-          const screenX = originX + t.x * CELL;
-          const screenY = originY + t.y * CELL;
-          const bad = invalidCells.has(key(t.x, t.y));
-          return (
-            <Group key={t.id} x={screenX} y={screenY}>
-              <Rect width={CELL} height={CELL} fill="#fff" stroke={bad ? "#f44" : "#333"} strokeWidth={2} />
-              <Text text={t.letter} fontSize={24} x={12} y={8} />
-            </Group>
-          );
-        })}
+        {tiles.map((t: PlacedTile) => (
+          <PlacedTileComponent
+            key={t.id}
+            tile={t}
+            x={originX + t.x * CELL}
+            y={originY + t.y * CELL}
+            isInvalid={invalidCells.has(key(t.x, t.y))}
+            onRemove={removeTile}
+            onCursorMove={(x, y) => setCursor({ pos: { x, y } })}
+          />
+        ))}
       </Layer>
 
       <Layer>

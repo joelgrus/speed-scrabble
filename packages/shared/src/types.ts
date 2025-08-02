@@ -22,7 +22,7 @@ export type Board = Record<string /* `${x},${y}` */, PlacedTile>;
 
 export type Rules = {
   startDraw: number;   // default 7
-  peelDraw: number;    // default 2
+  drawAmount: number;  // default 2
   dumpEnabled: boolean; // later
 };
 
@@ -34,6 +34,7 @@ export type ValidationIssue = {
 export type ValidationResult = {
   ok: boolean;
   issues: ValidationIssue[];
+  connected: boolean;
 };
 
 export type Orientation = "H"|"V";
