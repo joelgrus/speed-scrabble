@@ -5,3 +5,6 @@ export * from "./bag";
 export * from "./board";
 export * from "./validator";
 export * from "./letterValues";
+export * from "./config";
+export * from "./gameRules";
+export * from "./shareEncoding";

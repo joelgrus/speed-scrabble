@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { validateBoard } from '../validator'
 import { set } from '../board'
-import type { Board } from '../types'
+import type { Board, Letter } from '../types'
 
-const createTile = (id: string, letter: string, x: number, y: number) => ({
+const createTile = (id: string, letter: Letter, x: number, y: number) => ({
   id, letter, x, y
 })
 

@@ -15,11 +15,36 @@ export type PlacedTile = {
     y: number;
 };
 export type Board = Record<string, PlacedTile>;
-export type Rules = {
+export type GameMode = 'classic' | 'timed' | 'custom';
+export interface BaseRules {
+    /** Number of tiles drawn at game start */
     startDraw: number;
+    /** Number of tiles drawn when rack is empty and board is valid */
     drawAmount: number;
+    /** Whether tile dumping is enabled */
     dumpEnabled: boolean;
-};
+}
+export interface TimedGameRules extends BaseRules {
+    /** Game duration in seconds */
+    gameDuration: number;
+    /** Time penalty per dump in seconds */
+    dumpTimePenalty: number;
+    /** Maximum dumps allowed per game */
+    maxDumps: number;
+    /** Bonus points per second remaining */
+    timeBonus: number;
+}
+export interface GameRules {
+    /** Current game mode */
+    mode: GameMode;
+    /** Base game rules */
+    base: BaseRules;
+    /** Timed mode specific rules (only when mode is 'timed') */
+    timed?: TimedGameRules;
+}
+/** Legacy Rules interface for backward compatibility */
+export interface Rules extends BaseRules {
+}
 export type ValidationIssue = {
     word: string;
     cells: Coord[];

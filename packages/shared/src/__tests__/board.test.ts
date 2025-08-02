@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { key, get, set, del, isConnected, extractWords } from '../board'
-import type { Board, PlacedTile } from '../types'
+import type { Board, PlacedTile, Letter } from '../types'
 
-const createTile = (id: string, letter: string, x: number, y: number): PlacedTile => ({
+const createTile = (id: string, letter: Letter, x: number, y: number): PlacedTile => ({
   id, letter, x, y
 })
 
@@ -254,7 +254,7 @@ describe('extractWords', () => {
 
   it('should extract longer words correctly', () => {
     const board: Board = {}
-    const letters = ['S', 'C', 'R', 'A', 'B', 'B', 'L', 'E']
+    const letters: Letter[] = ['S', 'C', 'R', 'A', 'B', 'B', 'L', 'E']
     letters.forEach((letter, i) => {
       set(board, createTile(`t${i}`, letter, i, 0))
     })

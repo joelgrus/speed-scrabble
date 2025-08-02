@@ -148,7 +148,10 @@ export const DEV_CONFIG = {
 // =============================================================================
 
 export type GameConfig = {
-  ui: typeof CELL_SIZE & typeof GRID_SIZE & typeof ZOOM_CONFIG & typeof TILE_EFFECTS;
+  ui: {
+    CELL_SIZE: typeof CELL_SIZE;
+    GRID_SIZE: typeof GRID_SIZE;
+  } & typeof ZOOM_CONFIG & typeof TILE_EFFECTS;
   rules: typeof DEFAULT_GAME_RULES & typeof DUMP_CONFIG;
   validation: typeof VALIDATION_BOUNDS;
   performance: typeof PERFORMANCE_CONFIG;

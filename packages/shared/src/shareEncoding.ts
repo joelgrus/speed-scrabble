@@ -210,7 +210,8 @@ export function decodeGameResult(encoded: string): GameResult {
     
     return { username, date, width, height, grid, time };
   } catch (error) {
-    throw new Error(`Failed to decode game result: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to decode game result: ${message}`);
   }
 }
 

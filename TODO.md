@@ -1,333 +1,194 @@
-# Speed Scrabble Development TODO
+# Speed Scrabble - Production Readiness TODO
 
-## ✅ COMPLETED: Visual Polish (Professional Board Game Look)
+## 🚨 P0: Critical Issues (Must fix before production)
 
-### Tile Improvements ✅
-- ✅ **3D Tile Appearance**
-  - ✅ Rounded corners (6px border-radius)
-  - ✅ Drop shadows with hover effects  
-  - ✅ Cream/ivory color scheme (#FAF8F3)
-  - ✅ Hover animations with slight lift effect
+### TypeScript Strict Mode ✅ COMPLETED
+- [x] Enable `"strict": true` in both tsconfig.json files
+- [x] Fix all resulting type errors from strict mode
+- [x] Enable `"strictNullChecks": true` specifically
+- [x] Enable `"strictFunctionTypes": true` specifically
+- [x] Remove all uses of `any` type (replaced with proper `unknown` typing)
 
-- ✅ **Typography**
-  - ✅ Georgia serif font for tile letters
-  - ✅ Bold, larger letter display (26px)
-  - ✅ Point values in bottom-right corner
-  - ✅ Professional contrast and sizing
+### Schema/Type Alignment
+- [ ] Update `schemas.ts` to use `drawAmount` instead of `peelDraw`
+- [ ] Add Zod schemas for GameRules, TimedGameRules, BaseRules types
+- [ ] Add schema validation for all new game mode types
+- [ ] Ensure runtime validation matches TypeScript types exactly
 
-- ✅ **Invalid Word Styling**
-  - ✅ Bold red background (#FF6B6B) for invalid tiles
-  - ✅ Thick red border (3px) with bright red (#FF0000)
-  - ✅ Enhanced red shadows for maximum visibility
+### Error Boundaries
+- [ ] Wrap BoardCanvas component with error boundary
+- [ ] Wrap TileRack component with error boundary
+- [ ] Wrap Controls component with error boundary
+- [ ] Add error logging/reporting to error boundaries
+- [ ] Create user-friendly error recovery UI
 
-### Board Surface ✅
-- ✅ **Professional Background**
-  - ✅ Deep green felt texture (#2C5F2D)
-  - ✅ Extended grid coverage (4x larger area)
-  - ✅ Subtle grid lines with proper opacity
+### Critical Bug Fixes
+- [ ] Fix silent failures in placeTile() - should notify user on error
+- [ ] Fix silent failures in removeTile() - should notify user on error
+- [ ] Add proper error recovery mechanisms throughout gameStore
+- [ ] Fix missing bounds checking for grid coordinates
+- [ ] Validate tile IDs before all array operations
 
-- ✅ **Performance Optimization**
-  - ✅ Eliminated 2500+ individual cell rectangles
-  - ✅ Conditional shadow rendering
-  - ✅ Simplified gradients and effects
+## 🔧 P1: Architecture & Performance (Fix before scaling)
 
-### UI Elements ✅  
-- ✅ **Wooden Rack Styling**
-  - ✅ Wood texture background gradient
-  - ✅ Professional tile button styling
-  - ✅ Improved spacing and hover effects
+### State Management Refactor
+- [ ] Split gameStore.ts into focused stores:
+  - [ ] `useGameStore` - board, tiles, validation only
+  - [ ] `useTimerStore` - timer, penalties, game duration
+  - [ ] `useUIStore` - cursor, modes, UI state
+  - [ ] `useShareStore` - share functionality
+- [ ] Remove cross-store dependencies
+- [ ] Implement proper event system for store communication
 
-- ✅ **Control Panel**
-  - ✅ Card-style background with professional styling
-  - ✅ 3D button effects with hover states
-  - ✅ Consistent typography and color scheme
+### Data Structure Optimization
+- [ ] Replace string-based board keys with proper data structure:
+  ```typescript
+  // Current: board["x,y"]
+  // Better: board.get(hash(x,y)) or board[x][y]
+  ```
+- [ ] Implement coordinate hashing function for O(1) lookups
+- [ ] Consider using Map or 2D array instead of object
+- [ ] Cache coordinate parsing results
 
-- ✅ **Victory Screen**
-  - ✅ Animated entrance with bouncy effects
-  - ✅ Professional styling with gold accents
-  - ✅ Improved typography and layout
+### Algorithm Improvements
+- [ ] Optimize extractWords() to avoid O(n²) behavior:
+  - [ ] Cache word boundaries
+  - [ ] Update incrementally on tile placement/removal
+  - [ ] Use spatial indexing for word detection
+- [ ] Optimize isConnected() BFS:
+  - [ ] Only run when tiles added/removed
+  - [ ] Cache connectivity state
+  - [ ] Use union-find for faster connectivity checks
 
-### Color Scheme ✅
-- ✅ **Professional Palette Applied**
-  - ✅ Tiles: Cream/Ivory (#FAF8F3)  
-  - ✅ Board: Deep green felt (#2C5F2D)
-  - ✅ Accents: Gold (#FFD700) for highlights
-  - ✅ Text: Dark brown (#3E2723)
-  - ✅ Wood tones: Brown gradients (#8B6B47, #6D5437)
+### Performance Optimizations
+- [ ] Add React.memo to PlacedTileComponent
+- [ ] Memoize tiles array in BoardCanvas (currently recreated every render)
+- [ ] Implement virtual scrolling for large boards
+- [ ] Use Web Workers for validation on large boards
+- [ ] Add proper useCallback for all event handlers
 
----
+## 🏗️ P2: Code Quality & Best Practices
 
-## 🔧 CRITICAL: Code Quality & Engineering Foundation
+### Configuration Management
+- [ ] Create `packages/shared/src/config/` directory with:
+  - [ ] `gameConfig.ts` - game rules, tile distribution
+  - [ ] `uiConfig.ts` - sizes, colors, animations
+  - [ ] `performanceConfig.ts` - debounce times, limits
+- [ ] Remove all magic numbers/strings:
+  - [ ] `window.innerWidth - 320` → UI_CONFIG.SIDEBAR_WIDTH
+  - [ ] Animation durations → ANIMATION_CONFIG
+  - [ ] Grid sizes → GRID_CONFIG
 
-**Status**: Must complete before adding new features
-**Assessment**: Codebase has solid architecture but critical gaps in testing, error handling, and reliability
+### Input Validation
+- [ ] Create validation middleware for all user inputs
+- [ ] Add coordinate bounds checking everywhere
+- [ ] Validate all tile operations before execution
+- [ ] Add validation for localStorage data on load
+- [ ] Create comprehensive error types:
+  ```typescript
+  class GameError extends Error {
+    constructor(message: string, code: string, recoverable: boolean)
+  }
+  ```
 
-### 🚨 Critical Issues (Fix Immediately)
+### Test Coverage
+- [ ] Add component tests for:
+  - [ ] BoardCanvas interactions
+  - [ ] TileRack drag/drop
+  - [ ] Keyboard navigation
+  - [ ] Timer functionality
+- [ ] Add integration tests for:
+  - [ ] Complete game flow
+  - [ ] State persistence
+  - [ ] Error recovery
+- [ ] Add performance tests:
+  - [ ] Large board stress test
+  - [ ] Rapid tile placement test
+  - [ ] Memory leak detection
 
-#### **Testing Infrastructure** ✅ COMPLETED
-- ✅ **Set up testing framework**
-  - ✅ Install Vitest + React Testing Library + @testing-library/jest-dom  
-  - ✅ Configure test scripts in package.json for both packages
-  - ✅ Set up test environment with proper TypeScript support
-  - ✅ Add coverage reporting (achieved 78.2% on core logic)
+## 🚀 P3: Production Infrastructure
 
-- ✅ **Core Game Logic Tests** (Priority 1) - 142 tests total
-  - ✅ `bag.ts`: Test tile distribution, shuffling determinism, edge cases (18 tests)
-  - ✅ `validator.ts`: Test word validation, connectivity checking, edge cases (28 tests) 
-  - ✅ `board.ts`: Test word extraction, placement logic, coordinate handling (50 tests)
-  - ✅ `rng.ts`: Test seeded randomness, deterministic output (24 tests)
-  - ✅ `letterValues.ts`: Test all letter mappings exist, immutability (22 tests)
+### Security
+- [ ] Add Content Security Policy headers
+- [ ] Implement localStorage encryption/signing
+- [ ] Add XSS protection for user content
+- [ ] Sanitize all displayed text
+- [ ] Add rate limiting for actions
 
-- ⏳ **State Management Tests** (Priority 2) - DEFERRED
-  - [ ] `gameStore.ts`: Test all state transitions, side effects, persistence
-  - [ ] Test race conditions in async operations (autoDraw, validation)
-  - [ ] Test edge cases: empty rack, full board, invalid moves
-  - [ ] Test dump mechanics: tile return, bag shuffling, draw counts
+### Build & Deployment
+- [ ] Set up environment configuration:
+  - [ ] `.env.development`
+  - [ ] `.env.production`
+  - [ ] `.env.staging`
+- [ ] Configure production build optimizations:
+  - [ ] Code splitting by route
+  - [ ] Tree shaking unused code
+  - [ ] Asset optimization
+- [ ] Add error monitoring (Sentry)
+- [ ] Add analytics (privacy-friendly)
 
-- ⏳ **Component Integration Tests** (Priority 3) - DEFERRED  
-  - [ ] `useKeyboard.ts`: Test all keyboard interactions, prevent default behavior
-  - [ ] `PlacedTileComponent.tsx`: Test click/touch interactions, hover states
-  - [ ] `TileRack.tsx`: Test tile selection, dump mode, animations
+### Browser Support
+- [ ] Add polyfills for older browsers
+- [ ] Add feature detection for:
+  - [ ] Canvas API
+  - [ ] Konva compatibility
+  - [ ] LocalStorage availability
+- [ ] Add proper viewport meta tags
+- [ ] Test on major browsers (Chrome, Firefox, Safari, Edge)
 
-#### **Error Handling & Resilience** ✅ COMPLETED
-- ✅ **Add React Error Boundaries**
-  - ✅ Create `ErrorBoundary` component for the entire app
-  - ✅ Add specific boundaries around game canvas and tile interactions  
-  - ✅ Implement error reporting/logging system
-  - ✅ Add graceful fallback UI for component failures
+### Performance Monitoring
+- [ ] Add performance metrics collection
+- [ ] Monitor render performance
+- [ ] Track memory usage
+- [ ] Add user timing API integration
+- [ ] Create performance dashboard
 
-- ✅ **Input Validation & Bounds Checking**
-  - ✅ Validate all coordinates before board operations
-  - ✅ Add bounds checking for array operations (safeArraySplice utility)
-  - ✅ Validate tile IDs exist before operations
-  - ✅ Add safeguards for malformed persisted state
+## 📋 Nice to Have (Post-launch)
 
-- ✅ **State Validation**
-  - ✅ Create comprehensive validation utilities (40 validation tests)
-  - ✅ Add runtime validation for critical state transitions
-  - ✅ Implement state recovery mechanisms for corrupted data
-  - ✅ Add invariant checks for game state consistency
-
-#### **Performance Critical Fixes** ✅ COMPLETED
-- ✅ **Fix Event Handler Recreation**
-  - ✅ Add proper useCallback for event handlers (Fixed hooks violations)
-  - ✅ Implement proper memoization for expensive operations  
-  - ✅ Fix cursor position causing constant re-renders
-
-- ✅ **Optimize Validation Calls**
-  - ✅ Debounce validation to 100ms (prevents excessive calls)
-  - ⏳ Implement incremental validation (only check changed areas) - DEFERRED
-  - ⏳ Cache validation results and invalidate strategically - DEFERRED
-
-- ✅ **State Update Batching**
-  - ✅ Batch related state updates into single operations
-  - ✅ Use React 18 automatic batching where possible
-  - ✅ Minimize unnecessary re-renders in child components
-
-### ⚠️ High Priority Issues (Next Sprint)
-
-#### **Configuration Management**
-- [ ] **Centralize Game Constants**
-  - [ ] Create `packages/shared/src/config.ts` with all magic numbers
-  - [ ] Move CELL, GRID_SIZE, DEFAULT_RULES to config
-  - [ ] Add environment-based configuration support
-  - [ ] Document all configurable parameters
-
-- [ ] **Game Rules Architecture**  
-  - [ ] Create proper Rules interface with validation
-  - [ ] Support multiple game modes (classic, timed, custom)
-  - [ ] Add rules validation and migration system
-
-#### **Type Safety Improvements** ✅ COMPLETED
-- ✅ **Remove All `any` Types**
-  - ✅ Fix event handler typing in PlacedTileComponent (KonvaEventObject types)
-  - ✅ Add proper Konva event types throughout  
-  - ✅ Create strict type guards for external data
-
-- ✅ **Runtime Validation at Boundaries**
-  - ✅ Use comprehensive validation utilities for all boundaries
-  - ✅ Validate localStorage data before use (gameStore migration)
-  - ✅ Add type guards for external API data (validation utilities)
-
-- ✅ **Strict TypeScript Configuration**
-  - ✅ Add tsconfig.json with noImplicitAny enabled for both packages
-  - ✅ Fix all explicit any types (zero remaining)
-  - ✅ Add proper type assertions and runtime checks
-
-#### **Developer Experience** 🔄 PARTIAL
-- ✅ **Build Tooling** (Testing Only)
-  - ⏳ Add ESLint with strict rules - DEFERRED
-  - ⏳ Add Prettier for consistent formatting - DEFERRED  
-  - ⏳ Set up pre-commit hooks with lint-staged - DEFERRED
-  - ✅ Add TypeScript path mapping for clean imports
-
-- ✅ **Development Scripts** (Testing)
-  - ✅ Add test:watch, test:coverage commands for both packages
-  - ⏳ Add lint:fix, format commands - DEFERRED
-  - ⏳ Add build:analyze for bundle analysis - DEFERRED
-
-### 📈 Medium Priority (Future Iterations)
-
-#### **Architecture Improvements**
-- [ ] **Component Responsibility Separation**
-  - [ ] Split PlacedTileComponent concerns (rendering, interaction, animation)
-  - [ ] Create custom hooks for complex logic (useTileInteraction, useHover)
-  - [ ] Implement proper separation between container and presentation components
-
-- [ ] **Domain-Driven Design**
-  - [ ] Organize code into domain layers (domain/application/infrastructure/presentation)
-  - [ ] Create proper domain services for game operations
-  - [ ] Implement repository pattern for state persistence
-
-#### **Security & Reliability**
-- [ ] **Input Sanitization**
-  - [ ] Sanitize all user-displayable content (word validation errors)
-  - [ ] Add XSS protection for dynamic content
-  - [ ] Validate and escape localStorage data
-
-- [ ] **Monitoring & Observability**
-  - [ ] Add error tracking (Sentry or similar)
-  - [ ] Implement performance monitoring
-  - [ ] Add user analytics for game metrics
-  - [ ] Create health check endpoints
-
-#### **Documentation**
-- [ ] **API Documentation**
-  - [ ] Document all shared package exports with JSDoc
-  - [ ] Create architecture decision records (ADRs)
-  - [ ] Add component prop documentation with Storybook
-
-- [ ] **Developer Guides**
-  - [ ] Write contribution guidelines
-  - [ ] Create development setup guide
-  - [ ] Document build and deployment processes
-
-### 📝 Implementation Priority Order
-
-**Week 1: Critical Foundation**
-1. Set up testing framework and write core logic tests
-2. Add error boundaries and input validation
-3. Fix performance issues (event handlers, validation)
-
-**Week 2: Type Safety & Configuration**  
-1. Remove all `any` types and add strict TypeScript
-2. Centralize configuration and add runtime validation
-3. Set up development tooling (ESLint, Prettier, pre-commit)
-
-**Week 3: Architecture & Documentation**
-1. Refactor component responsibilities
-2. Add comprehensive error handling
-3. Create basic API documentation
-
-**Success Criteria Before Adding Timed Gameplay:**
-- ✅ 80%+ test coverage on core game logic (78.2% achieved)
-- ✅ Zero TypeScript `any` types
-- ✅ All user inputs validated  
-- ✅ Error boundaries implemented
-- ✅ Performance issues resolved
-- ⏳ Configuration centralized - DEFERRED
-
----
-
-## ✅ PHASE 2: Timed Gameplay - COMPLETED!
-
-### Timer System ✅
-- ✅ **Game Timer**
-  - ✅ Count-up timer (faster completion = better)
-  - ✅ Always timed - no toggle option
-  - ✅ Visual timer with color coding (green < 3min, orange 3-5min, red > 5min)
-  - ✅ Real-time display with MM:SS format
-
-- ✅ **Timer State Management**
-  - ✅ Automatic timer start on game init
-  - ✅ Timer pauses on game win
-  - ✅ Total time calculation includes dump penalties
-  - ✅ Persistent timer state across refreshes
-
-### Dumping Penalties ✅
-- ✅ **Dump Cost System**
-  - ✅ 30-second time penalty for each dump action
-  - ✅ Visual feedback showing "+30s penalty" 
-  - ✅ Penalty accumulation in game state
-  - ✅ Total time includes all dump penalties
-
-## ✅ PHASE 3: Share System - COMPLETED!
-
-### Share Feature ✅
-- ✅ **Shareable Game Results**
-  - ✅ Encode game result (username, date, grid, time) in URL
-  - ✅ Efficient compression using run-length encoding (7-66x smaller)
-  - ✅ Share button on victory screen
-  - ✅ Automatic clipboard copy with confirmation
-
-- ✅ **Share Page**
-  - ✅ Decode and display shared game results
-  - ✅ Responsive grid display that fits all screens
-  - ✅ Shows player name, date, and completion time
-  - ✅ "Play Speed Scrabble" link to start new game
-
-- ✅ **Daily Puzzle Support**
-  - ✅ Username field for player identification
-  - ✅ Date field (YYYY-MM-DD) for daily puzzles
-  - ✅ Canonical URLs for comparing daily results
-  - ✅ Future-ready for leaderboards
-
-### UI Enhancements for Timed Mode
-- [ ] **Timer Display**
-  - [ ] Prominent timer in controls panel
-  - [ ] Color coding (green → yellow → red)
-  - [ ] Pulsing animation for low time warnings
-  - [ ] Pause functionality (for development/testing)
-
-- [ ] **Score Display**  
-  - [ ] Current score always visible
-  - [ ] Score change animations (+points)
-  - [ ] Penalty notifications (-time/-points)
-  - [ ] Personal best indicator
-
-### Game Flow Updates
-- [ ] **Start/End Game States**
-  - [ ] Game start countdown (3-2-1-GO!)
-  - [ ] Time's up notification with final score
-  - [ ] Play again with same/different timer settings
-  - [ ] Quick restart button
-
-- [ ] **Settings**
-  - [ ] Timer duration options (1min, 3min, 5min, unlimited)
-  - [ ] Dump penalty type (time vs points)
-  - [ ] Difficulty settings affecting scoring
-
----
-
-## 🔊 Future Enhancements
-
-### Sound Effects
-- [ ] Tile placement sound
-- [ ] Draw/peel sound  
-- [ ] Timer ticking (last 10 seconds)
-- [ ] Victory fanfare
-- [ ] Error/penalty sounds
+### Developer Experience
+- [ ] Add Storybook for component documentation
+- [ ] Create development style guide
+- [ ] Add visual regression testing
+- [ ] Implement E2E tests with Playwright
+- [ ] Add commit message validation
 
 ### Advanced Features
-- [ ] Daily challenges with preset timer/scoring
-- [ ] Achievement system
-- [ ] Statistics tracking
-- [ ] Replay system for interesting games
-- [ ] Multiplayer timed races
+- [ ] Implement undo/redo system
+- [ ] Add game replay functionality
+- [ ] Create tutorial mode
+- [ ] Add accessibility features (screen reader support)
+- [ ] Implement offline mode with service worker
 
----
+### Code Documentation
+- [ ] Add JSDoc to all public APIs
+- [ ] Create architecture diagrams
+- [ ] Write ADRs for major decisions
+- [ ] Document performance optimizations
+- [ ] Create troubleshooting guide
 
-## 📝 Implementation Notes
+## 🎯 Priority Order for Production
 
-**Current Status**: Engineering foundation complete ✅ → **NEXT**: Timed gameplay features
-**Critical Path**: All critical engineering excellence tasks completed - ready for feature development  
-**Target**: Transform into a reliable, maintainable, fast-paced word game
+### Week 1: Critical Fixes
+1. Enable TypeScript strict mode and fix errors
+2. Add comprehensive error boundaries
+3. Fix schema/type mismatches
+4. Add proper error handling to all operations
 
-✅ **ENGINEERING FOUNDATION COMPLETE** (December 2024)
-- 142 comprehensive tests with 78.2% coverage on core game logic
-- React Error Boundaries and graceful error handling throughout
-- Comprehensive input validation and type safety (zero 'any' types)
-- Performance optimizations with debounced validation and proper React patterns
-- Immutable data structures and runtime validation
+### Week 2: Architecture
+1. Refactor state management into focused stores
+2. Optimize data structures (board representation)
+3. Improve algorithm performance
+4. Add proper memoization
 
-The codebase now has a solid engineering foundation and is ready for adding complex features like timed gameplay. All critical code quality issues have been resolved, ensuring long-term maintainability and reliability.
+### Week 3: Production Ready
+1. Set up build configuration
+2. Add security headers
+3. Configure monitoring
+4. Performance testing
+
+### Success Metrics
+- [ ] Zero unhandled errors in production
+- [ ] <100ms validation time for full board
+- [ ] <16ms render time (60fps)
+- [ ] 90%+ test coverage
+- [ ] Zero TypeScript errors with strict mode
