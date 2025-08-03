@@ -2,10 +2,15 @@ import React, { useEffect, useMemo } from "react";
 import { useGame } from "../state/gameStore";
 import { TIMED_GAME_CONFIG } from "@ss/shared";
 
-export default function Timer() {
+interface TimerProps {
+  compact?: boolean;
+}
+
+export default function Timer({ compact = false }: TimerProps) {
   const isGameActive = useGame(s => s.isGameActive);
   const currentTime = useGame(s => s.currentTime);
   const dumpPenalties = useGame(s => s.dumpPenalties);
+  const dumpCount = useGame(s => s.dumpCount);
   const getTotalTime = useGame(s => s.getTotalTime);
   const updateTimer = useGame(s => s.updateTimer);
 
@@ -44,6 +49,35 @@ export default function Timer() {
     if (totalTime >= 180) return "#FFA500"; // Orange for 3+ minutes  
     return "#4CAF50"; // Green for under 3 minutes
   }, [totalTime]);
+
+  if (compact) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <span style={{ fontSize: "14px", color: "#FAF8F3" }}>⏱️</span>
+        <span
+          style={{
+            fontSize: "16px",
+            fontWeight: "bold",
+            color: timerColor,
+            fontFamily: "monospace",
+          }}
+        >
+          {formattedTime}
+        </span>
+        {dumpPenalties > 0 && (
+          <span style={{ fontSize: "12px", color: "#FF6B6B" }}>
+            🚫{dumpCount}
+          </span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -96,7 +130,7 @@ export default function Timer() {
             fontWeight: "bold",
           }}
         >
-          🚫 {Math.floor(dumpPenalties / TIMED_GAME_CONFIG.dumpTimePenalty)} dumps
+          🚫 {dumpCount} dump{dumpCount !== 1 ? 's' : ''}
         </div>
       )}
     </div>

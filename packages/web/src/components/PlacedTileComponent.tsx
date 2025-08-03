@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from "react";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { Group, Rect, Text } from "react-konva";
-import { PlacedTile, LETTER_VALUES, CELL_SIZE, TILE_EFFECTS } from "@ss/shared";
+import { PlacedTile, LETTER_VALUES, CELL_SIZE, TILE_EFFECTS, GRID_SIZE } from "@ss/shared";
 
 interface PlacedTileComponentProps {
   tile: PlacedTile;
@@ -10,9 +10,13 @@ interface PlacedTileComponentProps {
   isInvalid: boolean;
   onRemove: (x: number, y: number) => void;
   onCursorMove: (x: number, y: number) => void;
+  onTileMove?: (oldX: number, oldY: number, newX: number, newY: number) => boolean;
+  onToggleOrientation: () => void;
+  isAtCursor: boolean;
 }
 
 const CELL = CELL_SIZE;
+const GRID = GRID_SIZE;
 
 export default function PlacedTileComponent({
   tile,
@@ -21,6 +25,9 @@ export default function PlacedTileComponent({
   isInvalid,
   onRemove,
   onCursorMove,
+  onTileMove,
+  onToggleOrientation,
+  isAtCursor,
 }: PlacedTileComponentProps) {
   const [isLongPress, setIsLongPress] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -44,12 +51,16 @@ export default function PlacedTileComponent({
         return;
       }
 
-      // Normal left click - move cursor
+      // Normal left click - move cursor or toggle orientation if already at cursor
       if (e.evt.button === 0) {
-        onCursorMove(tile.x, tile.y);
+        if (isAtCursor) {
+          onToggleOrientation();
+        } else {
+          onCursorMove(tile.x, tile.y);
+        }
       }
     },
-    [tile.x, tile.y, onRemove, onCursorMove]
+    [tile.x, tile.y, onRemove, onCursorMove, onToggleOrientation, isAtCursor]
   );
 
   const handleContextMenu = useCallback((e: KonvaEventObject<Event>) => {
@@ -61,35 +72,68 @@ export default function PlacedTileComponent({
       e.cancelBubble = true;
       setIsLongPress(false);
 
+
+      // Clear any existing timer
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+
       longPressTimer.current = setTimeout(() => {
         setIsLongPress(true);
-        onRemove(tile.x, tile.y);
         // Optional: Add haptic feedback if available
         if ("vibrate" in navigator) {
           navigator.vibrate(50);
         }
+        onRemove(tile.x, tile.y);
       }, TILE_EFFECTS.longPressDuration);
     },
     [tile.x, tile.y, onRemove]
   );
 
+  const handleTouchMove = useCallback((e: KonvaEventObject<TouchEvent>) => {
+    // Don't cancel long press on tiny movements - only on significant drag
+    // This might have been canceling the long press too easily
+  }, []);
+
   const handleTouchEnd = useCallback((e: KonvaEventObject<TouchEvent>) => {
+    e.cancelBubble = true;
+    
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
+    
+    // If long press wasn't triggered, treat it as a tap
+    if (!isLongPress) {
+      if (isAtCursor) {
+        onToggleOrientation();
+      } else {
+        onCursorMove(tile.x, tile.y);
+      }
+    }
+    
+    // Reset states
     setIsLongPress(false);
-  }, []);
+  }, [isLongPress, tile.x, tile.y, onCursorMove, onToggleOrientation, isAtCursor]);
+
 
   const letterValue = useMemo(
     () => LETTER_VALUES[tile.letter as keyof typeof LETTER_VALUES],
     [tile.letter]
   );
   const tileScale = useMemo(
-    () => (isLongPress ? TILE_EFFECTS.longPressScale : isHovered ? TILE_EFFECTS.hoverScale : 1),
+    () => (
+      isLongPress ? TILE_EFFECTS.longPressScale 
+      : isHovered ? TILE_EFFECTS.hoverScale 
+      : 1
+    ),
     [isLongPress, isHovered]
   );
   const tileLift = useMemo(
-    () => (isLongPress ? TILE_EFFECTS.longPressLift : isHovered ? TILE_EFFECTS.hoverLift : 0),
+    () => (
+      isLongPress ? TILE_EFFECTS.longPressLift 
+      : isHovered ? TILE_EFFECTS.hoverLift 
+      : 0
+    ),
     [isLongPress, isHovered]
   );
 
@@ -97,11 +141,19 @@ export default function PlacedTileComponent({
     <Group
       x={x}
       y={y + tileLift}
+      draggable={false}
       onClick={handleTileClick}
       onContextMenu={handleContextMenu}
       onMouseDown={handleTileClick}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={(e: KonvaEventObject<TouchEvent>) => {
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+        }
+        setIsLongPress(false);
+      }}
       onMouseEnter={useCallback(() => setIsHovered(true), [])}
       onMouseLeave={useCallback(() => setIsHovered(false), [])}
     >
@@ -179,6 +231,7 @@ export default function PlacedTileComponent({
         offsetX={isLongPress ? CELL * TILE_EFFECTS.scaleOffset : 0}
         offsetY={isLongPress ? CELL * TILE_EFFECTS.scaleOffset : 0}
       />
+
     </Group>
   );
 }

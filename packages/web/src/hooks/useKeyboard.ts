@@ -50,7 +50,7 @@ export function useKeyboard() {
       const letter = e.key.toUpperCase();
       if (letter.length === 1 && letter >= "A" && letter <= "Z") {
         // Find first matching tile in rack
-        const tile = rack.find(t => t.letter === letter);
+        const tile = rack.find(t => t && t.letter === letter);
         if (tile) {
           placeTile(tile.id, cursor.pos.x, cursor.pos.y);
         }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useGame } from "./state/gameStore";
 import BoardCanvas from "./components/BoardCanvas";
 import TileRack from "./components/TileRack";
@@ -22,8 +22,20 @@ export default function App() {
   const getShareableResult = useGame(s => s.getShareableResult);
   const [loaded, setLoaded] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useKeyboard();
+
+  // Detect mobile viewport
+  const checkMobile = useCallback(() => {
+    setIsMobile(window.innerWidth <= 768);
+  }, []);
+
+  useEffect(() => {
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [checkMobile]);
 
   useEffect(() => {
     // Load dictionary and start with random seed
@@ -83,39 +95,43 @@ export default function App() {
         <h1
           style={{
             margin: 0,
-            fontSize: 24,
+            fontSize: isMobile ? 16 : 24,
             fontFamily: "Arial, sans-serif",
             fontWeight: "bold",
             color: "#E8F5E8",
             textShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
           }}
         >
-          Speed Scrabble by{" "}
-          <a
-            href="https://joelgrus.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#E8F5E8",
-              textDecoration: "underline",
-              textDecorationColor: "rgba(232, 245, 232, 0.5)",
-            }}
-          >
-            Joel Grus
-          </a>
-          {" "}and{" "}
-          <a
-            href="https://www.anthropic.com/claude-code"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#E8F5E8",
-              textDecoration: "underline",
-              textDecorationColor: "rgba(232, 245, 232, 0.5)",
-            }}
-          >
-            Claude
-          </a>
+          {isMobile ? "Speed Scrabble" : "Speed Scrabble by"}{" "}
+          {!isMobile && (
+            <>
+              <a
+                href="https://joelgrus.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#E8F5E8",
+                  textDecoration: "underline",
+                  textDecorationColor: "rgba(232, 245, 232, 0.5)",
+                }}
+              >
+                Joel Grus
+              </a>
+              {" "}and{" "}
+              <a
+                href="https://www.anthropic.com/claude-code"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#E8F5E8",
+                  textDecoration: "underline",
+                  textDecorationColor: "rgba(232, 245, 232, 0.5)",
+                }}
+              >
+                Claude
+              </a>
+            </>
+          )}
         </h1>
         <a
           href="https://github.com/joelgrus/speed-scrabble"
@@ -142,8 +158,10 @@ export default function App() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          height: "100vh",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 320px",
+          gridTemplateRows: isMobile ? "1fr 80px 120px" : "1fr",
+          height: isMobile ? "100dvh" : "100vh",
+          minHeight: isMobile ? "100dvh" : "100vh",
           width: "100vw",
           overflow: "hidden",
           margin: 0,
@@ -155,11 +173,13 @@ export default function App() {
       >
         <div style={{ position: "relative", overflow: "hidden" }}>
           <GameErrorBoundary component="BoardCanvas">
-            <BoardCanvas />
+            <BoardCanvas isMobile={isMobile} />
           </GameErrorBoundary>
-          <GameErrorBoundary component="TileRack">
-            <TileRack />
-          </GameErrorBoundary>
+          {!isMobile && (
+            <GameErrorBoundary component="TileRack">
+              <TileRack />
+            </GameErrorBoundary>
+          )}
           {justDrew && (
             <div
               style={{
@@ -355,8 +375,13 @@ export default function App() {
             </div>
           )}
         </div>
+        {isMobile && (
+          <GameErrorBoundary component="TileRack">
+            <TileRack isMobile={true} />
+          </GameErrorBoundary>
+        )}
         <GameErrorBoundary component="Controls">
-          <Controls />
+          <Controls isMobile={isMobile} />
         </GameErrorBoundary>
       </div>
       <NotificationToast />

@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useGame } from "../state/gameStore";
 import { LETTER_VALUES, ANIMATION_DURATIONS } from "@ss/shared";
 
-export default function TileRack() {
+interface TileRackProps {
+  isMobile?: boolean;
+}
+
+export default function TileRack({ isMobile = false }: TileRackProps) {
   const rack = useGame(s => s.rack);
   const placeTile = useGame(s => s.placeTile);
   const cursor = useGame(s => s.cursor);
@@ -12,9 +16,10 @@ export default function TileRack() {
   const [animatingTiles, setAnimatingTiles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (justDrew && rack.length >= 2) {
+    if (justDrew && rack.filter(t => t !== null).length >= 2) {
       // Animate the last 2 tiles that were drawn
-      const newTileIds = rack.slice(-2).map(t => t.id);
+      const nonNullTiles = rack.filter(t => t !== null);
+      const newTileIds = nonNullTiles.slice(-2).map(t => t!.id);
       setAnimatingTiles(new Set(newTileIds));
 
       // Remove animation after delay
@@ -27,25 +32,34 @@ export default function TileRack() {
   return (
     <div
       style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 320,
+        position: isMobile ? "relative" : "fixed",
+        bottom: isMobile ? "auto" : 0,
+        left: isMobile ? "auto" : 0,
+        right: isMobile ? "auto" : 320,
         height: 80,
         background: "linear-gradient(to bottom, #8B6B47, #6D5437)",
         borderTop: "2px solid #5A4529",
         boxShadow: "inset 0 2px 8px rgba(0, 0, 0, 0.3)",
         zIndex: 10,
+        width: isMobile ? "100%" : "auto",
       }}
     >
       <div style={{ 
         position: "absolute",
         top: 16,
-        left: 20,
+        left: isMobile ? 0 : 20,
+        right: isMobile ? 0 : "auto",
         display: "flex", 
-        gap: 12
+        gap: 12,
+        padding: isMobile ? "0 20px" : 0,
+        overflowX: isMobile ? "auto" : "visible",
+        overflowY: "hidden",
+        maxWidth: "100%"
       }}>
-        {rack.map(t => {
+        {rack.map((t, index) => {
+          // Skip null tiles (gaps from touch usage)
+          if (!t) return <div key={`gap-${index}`} style={{ width: isMobile ? 52 : 44, height: isMobile ? 52 : 44 }} />;
+          
           const letterValue = LETTER_VALUES[t.letter as keyof typeof LETTER_VALUES];
           const isAnimating = animatingTiles.has(t.id);
 
@@ -56,12 +70,12 @@ export default function TileRack() {
                 if (dumpMode) {
                   dumpTile(t.id);
                 } else {
-                  placeTile(t.id, cursor.pos.x, cursor.pos.y);
+                  placeTile(t.id, cursor.pos.x, cursor.pos.y, true); // true = fromTouch
                 }
               }}
               style={{
-                width: 44,
-                height: 44,
+                width: isMobile ? 52 : 44,
+                height: isMobile ? 52 : 44,
                 border: "none",
                 borderRadius: "6px",
                 background: isAnimating ? "#C8E6C9" : dumpMode ? "#FFCDD2" : "#FAF8F3",

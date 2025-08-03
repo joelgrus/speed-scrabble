@@ -22,7 +22,7 @@ type GameState = {
   seed: string;
   rngSeed: number;
   bag: Tile[];
-  rack: Tile[];
+  rack: (Tile | null)[];
   board: Board;
   cursor: Cursor;
   dict: Set<string>;
@@ -43,8 +43,9 @@ type GameState = {
 
   init(dict: Set<string>, seed?: string): void;
   draw(n: number): void;
-  placeTile(tileId: string, x: number, y: number): void;
+  placeTile(tileId: string, x: number, y: number, fromTouch?: boolean): void;
   removeTile(x: number, y: number): void;
+  moveTile(oldX: number, oldY: number, newX: number, newY: number): boolean;
   setCursor(c: Partial<Cursor>): void;
   validate(): void;
   autoDraw(): void;
@@ -124,10 +125,13 @@ export const useGame = create<GameState>()(
       draw(n) {
         const { bag, rack } = get();
         const drawn = bag.splice(0, Math.min(n, bag.length)); // Don't try to draw more than available
-        set({ rack: rack.concat(drawn), poolRemaining: bag.length, justDrew: false });
+        
+        // Clean up gaps when drawing new tiles - compact the rack
+        const compactedRack = rack.filter(t => t !== null);
+        set({ rack: compactedRack.concat(drawn), poolRemaining: bag.length, justDrew: false });
       },
 
-      placeTile(tileId, x, y) {
+      placeTile(tileId, x, y, fromTouch = false) {
         try {
           const { rack, board, cursor } = get();
 
@@ -147,20 +151,30 @@ export const useGame = create<GameState>()(
           // Don't allow placing on occupied squares
           if (board[key(validCoords.x, validCoords.y)]) return;
 
-          const idx = rack.findIndex(t => t.id === validTileId);
+          const idx = rack.findIndex(t => t && t.id === validTileId);
           if (idx === -1) {
             console.warn("Tile not found in rack:", validTileId);
             return;
           }
 
-          // Safely remove tile from rack
-          const removedTiles = safeArraySplice(rack, idx, 1);
-          if (removedTiles.length === 0) {
-            console.warn("Failed to remove tile from rack");
-            return;
+          // Get the tile to place
+          const t = rack[idx];
+          
+          // Remove tile from rack - different behavior for touch vs keyboard
+          let newRack;
+          if (fromTouch) {
+            // For touch: leave gap by setting to null
+            newRack = [...rack];
+            newRack[idx] = null;
+          } else {
+            // For keyboard: remove and shift remaining tiles
+            const removedTiles = safeArraySplice(rack, idx, 1);
+            if (removedTiles.length === 0) {
+              console.warn("Failed to remove tile from rack");
+              return;
+            }
+            newRack = rack;
           }
-
-          const [t] = removedTiles;
           board[key(validCoords.x, validCoords.y)] = {
             id: t.id,
             letter: t.letter,
@@ -173,7 +187,7 @@ export const useGame = create<GameState>()(
           const nextY = cursor.orient === "V" ? validCoords.y + 1 : validCoords.y;
 
           set({
-            rack: [...rack],
+            rack: newRack,
             board: { ...board },
             cursor: { ...cursor, pos: { x: nextX, y: nextY } },
           });
@@ -224,6 +238,60 @@ export const useGame = create<GameState>()(
         }
       },
 
+      moveTile(oldX, oldY, newX, newY) {
+        try {
+          const { board } = get();
+          
+          // Validate coordinates
+          const validOldCoords = validateCoordinates(oldX, oldY);
+          const validNewCoords = validateCoordinates(newX, newY);
+          
+          if (!validOldCoords || !validNewCoords) {
+            console.warn("Invalid coordinates for tile movement:", { oldX, oldY, newX, newY });
+            return false;
+          }
+          
+
+          const oldKey = key(validOldCoords.x, validOldCoords.y);
+          const newKey = key(validNewCoords.x, validNewCoords.y);
+          
+          // Get the tile to move
+          const tile = board[oldKey];
+          if (!tile) {
+            console.warn("No tile found at position:", validOldCoords);
+            return false;
+          }
+
+          // Check if destination is occupied (and not the same position)
+          if (oldKey !== newKey && board[newKey]) {
+            console.warn("Destination occupied:", validNewCoords, "by tile:", board[newKey]);
+            return false;
+          }
+
+          // Move the tile
+          delete board[oldKey];
+          board[newKey] = {
+            ...tile,
+            x: validNewCoords.x,
+            y: validNewCoords.y,
+          };
+
+
+          set({ board: { ...board } });
+          
+          // Trigger validation after move
+          get().validate();
+          return true;
+        } catch (error) {
+          errorReporter.reportError(error, {
+            component: 'gameStore.moveTile',
+            action: `moveTile(${oldX}, ${oldY}, ${newX}, ${newY})`,
+            state: getSafeGameState(get()),
+          });
+          return false;
+        }
+      },
+
       setCursor(c) {
         try {
           const cur = get().cursor;
@@ -269,7 +337,7 @@ export const useGame = create<GameState>()(
         set({ invalidCells: bad, invalidWords: res.issues, connected: res.connected });
 
         // Check for win condition
-        if (rack.length === 0 && bag.length === 0 && res.ok) {
+        if (rack.filter(t => t !== null).length === 0 && bag.length === 0 && res.ok) {
           get().endGame();
         }
 
@@ -281,7 +349,7 @@ export const useGame = create<GameState>()(
 
       canDraw() {
         const { rack, invalidCells, connected } = get();
-        return rack.length === 0 && invalidCells.size === 0 && connected;
+        return rack.filter(t => t !== null).length === 0 && invalidCells.size === 0 && connected;
       },
 
       autoDraw() {
@@ -304,7 +372,7 @@ export const useGame = create<GameState>()(
 
       canDump() {
         const { rack, bag } = get();
-        return rack.length > 0 && bag.length >= DUMP_CONFIG.minimumBagSize;
+        return rack.filter(t => t !== null).length > 0 && bag.length >= DUMP_CONFIG.minimumBagSize;
       },
 
       dumpTile(tileId) {
@@ -320,7 +388,7 @@ export const useGame = create<GameState>()(
           }
 
           // Find and remove the tile from rack
-          const idx = rack.findIndex(t => t.id === validTileId);
+          const idx = rack.findIndex(t => t && t.id === validTileId);
           if (idx === -1) {
             console.warn("Tile not found in rack for dump:", validTileId);
             return;
@@ -328,6 +396,13 @@ export const useGame = create<GameState>()(
 
           // Add dump penalty first
           get().addDumpPenalty();
+          
+          // Show notification about the penalty after dump count is updated
+          const { dumpCount, dumpPenalties } = get();
+          notificationService.warning(
+            `Dump Penalty Applied`,
+            `Dump #${dumpCount} - Total penalties: ${dumpPenalties}s`
+          );
 
           // Safely remove tile from rack
           const dumpedTiles = safeArraySplice(rack, idx, 1);
