@@ -98,10 +98,14 @@ export const TIMED_GAME_CONFIG = {
   defaultDuration: 180, // 3 minutes
   /** Warning threshold in seconds (when timer turns red) */
   warningThreshold: 30,
-  /** Time penalty per dump in seconds */
+  /** Time penalty per dump in seconds (legacy - use dumpPenalties for escalating) */
   dumpTimePenalty: 30,
+  /** Escalating dump penalties: 30s, 60s, 120s, then +60s each additional */
+  dumpPenalties: [30, 60, 120], // 1st: 30s, 2nd: 60s, 3rd: 120s, 4th+: +60s each
+  /** Additional penalty for 4th dump and beyond */
+  additionalDumpPenalty: 60,
   /** Maximum number of dumps allowed per game */
-  maxDumpsPerGame: 3,
+  maxDumpsPerGame: 10, // Increased since penalties escalate
   /** Bonus points per second remaining */
   timeBonus: 1,
 } as const;
