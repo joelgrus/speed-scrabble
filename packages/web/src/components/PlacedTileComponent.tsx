@@ -32,6 +32,7 @@ export default function PlacedTileComponent({
   const [isLongPress, setIsLongPress] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout>();
+  const longPressTriggered = useRef<boolean>(false);
 
   const handleTileClick = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
@@ -71,6 +72,7 @@ export default function PlacedTileComponent({
     (e: KonvaEventObject<TouchEvent>) => {
       e.cancelBubble = true;
       setIsLongPress(false);
+      longPressTriggered.current = false;
 
 
       // Clear any existing timer
@@ -80,6 +82,7 @@ export default function PlacedTileComponent({
 
       longPressTimer.current = setTimeout(() => {
         setIsLongPress(true);
+        longPressTriggered.current = true;
         // Optional: Add haptic feedback if available
         if ("vibrate" in navigator) {
           navigator.vibrate(50);
@@ -103,7 +106,7 @@ export default function PlacedTileComponent({
     }
     
     // If long press wasn't triggered, treat it as a tap
-    if (!isLongPress) {
+    if (!longPressTriggered.current) {
       if (isAtCursor) {
         onToggleOrientation();
       } else {
@@ -113,7 +116,8 @@ export default function PlacedTileComponent({
     
     // Reset states
     setIsLongPress(false);
-  }, [isLongPress, tile.x, tile.y, onCursorMove, onToggleOrientation, isAtCursor]);
+    longPressTriggered.current = false;
+  }, [tile.x, tile.y, onCursorMove, onToggleOrientation, isAtCursor]);
 
 
   const letterValue = useMemo(

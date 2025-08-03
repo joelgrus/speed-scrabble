@@ -221,7 +221,18 @@ export const useGame = create<GameState>()(
           if (!pt) return;
 
           delete board[key(validCoords.x, validCoords.y)];
-          rack.push({ id: pt.id, letter: pt.letter });
+          
+          // For mobile: find leftmost empty slot in rack
+          const leftmostEmptyIndex = rack.findIndex(tile => tile === null);
+          
+          if (leftmostEmptyIndex !== -1) {
+            // Fill the leftmost empty slot
+            rack[leftmostEmptyIndex] = { id: pt.id, letter: pt.letter };
+          } else {
+            // No empty slots, add to the end
+            rack.push({ id: pt.id, letter: pt.letter });
+          }
+          
           set({ rack: [...rack], board: { ...board } });
 
           // Trigger validation after removal
