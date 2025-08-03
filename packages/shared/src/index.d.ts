@@ -8,4 +8,6 @@ export * from "./letterValues";
 export * from "./config";
 export * from "./gameRules";
 export * from "./shareEncoding";
+export * from "./coordinateHash";
+export * from "./optimizedBoard";
 //# sourceMappingURL=index.d.ts.map

@@ -64,10 +64,14 @@ export declare const TIMED_GAME_CONFIG: {
     readonly defaultDuration: 180;
     /** Warning threshold in seconds (when timer turns red) */
     readonly warningThreshold: 30;
-    /** Time penalty per dump in seconds */
+    /** Time penalty per dump in seconds (legacy - use dumpPenalties for escalating) */
     readonly dumpTimePenalty: 30;
+    /** Escalating dump penalties: 30s, 60s, 120s, then +60s each additional */
+    readonly dumpPenalties: readonly [30, 60, 120];
+    /** Additional penalty for 4th dump and beyond */
+    readonly additionalDumpPenalty: 60;
     /** Maximum number of dumps allowed per game */
-    readonly maxDumpsPerGame: 3;
+    readonly maxDumpsPerGame: 10;
     /** Bonus points per second remaining */
     readonly timeBonus: 1;
 };
@@ -91,6 +95,17 @@ export declare const VALIDATION_BOUNDS: {
     /** Maximum string length for tile IDs and other inputs */
     readonly maxStringLength: 100;
 };
+/** UI layout configuration */
+export declare const UI_LAYOUT: {
+    /** Width of the controls sidebar in pixels */
+    readonly sidebarWidth: 320;
+    /** Height of the header/top UI area in pixels */
+    readonly headerHeight: 80;
+    /** Minimum canvas width for responsive design */
+    readonly minCanvasWidth: 400;
+    /** Minimum canvas height for responsive design */
+    readonly minCanvasHeight: 300;
+};
 /** Configuration for development and testing */
 export declare const DEV_CONFIG: {
     /** Test seed values for deterministic behavior */
@@ -110,7 +125,12 @@ export type GameConfig = {
     ui: {
         CELL_SIZE: typeof CELL_SIZE;
         GRID_SIZE: typeof GRID_SIZE;
-    } & typeof ZOOM_CONFIG & typeof TILE_EFFECTS;
+    } & typeof ZOOM_CONFIG & typeof TILE_EFFECTS & {
+        sidebarWidth: number;
+        headerHeight: number;
+        minCanvasWidth: number;
+        minCanvasHeight: number;
+    };
     rules: typeof DEFAULT_GAME_RULES & typeof DUMP_CONFIG;
     validation: typeof VALIDATION_BOUNDS;
     performance: typeof PERFORMANCE_CONFIG;

@@ -82,10 +82,14 @@ export const TIMED_GAME_CONFIG = {
     defaultDuration: 180, // 3 minutes
     /** Warning threshold in seconds (when timer turns red) */
     warningThreshold: 30,
-    /** Time penalty per dump in seconds */
+    /** Time penalty per dump in seconds (legacy - use dumpPenalties for escalating) */
     dumpTimePenalty: 30,
+    /** Escalating dump penalties: 30s, 60s, 120s, then +60s each additional */
+    dumpPenalties: [30, 60, 120], // 1st: 30s, 2nd: 60s, 3rd: 120s, 4th+: +60s each
+    /** Additional penalty for 4th dump and beyond */
+    additionalDumpPenalty: 60,
     /** Maximum number of dumps allowed per game */
-    maxDumpsPerGame: 3,
+    maxDumpsPerGame: 10, // Increased since penalties escalate
     /** Bonus points per second remaining */
     timeBonus: 1,
 };
@@ -112,6 +116,17 @@ export const VALIDATION_BOUNDS = {
     /** Maximum string length for tile IDs and other inputs */
     maxStringLength: 100,
 };
+/** UI layout configuration */
+export const UI_LAYOUT = {
+    /** Width of the controls sidebar in pixels */
+    sidebarWidth: 320,
+    /** Height of the header/top UI area in pixels */
+    headerHeight: 80,
+    /** Minimum canvas width for responsive design */
+    minCanvasWidth: 400,
+    /** Minimum canvas height for responsive design */
+    minCanvasHeight: 300,
+};
 // =============================================================================
 // DEVELOPMENT & TESTING
 // =============================================================================
@@ -135,6 +150,7 @@ export const GAME_CONFIG = {
     ui: {
         ...ZOOM_CONFIG,
         ...TILE_EFFECTS,
+        ...UI_LAYOUT,
         CELL_SIZE,
         GRID_SIZE,
     },
