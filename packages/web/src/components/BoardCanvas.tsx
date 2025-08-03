@@ -77,6 +77,7 @@ export default function BoardCanvas({ isMobile = false }: BoardCanvasProps) {
     return () => clearTimeout(timeoutId);
   }, [board, validate]);
 
+
   const tiles = useMemo(() => Object.values(board), [board]);
 
   const handleGridClick = useCallback(

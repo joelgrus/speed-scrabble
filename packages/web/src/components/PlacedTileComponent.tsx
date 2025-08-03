@@ -33,6 +33,7 @@ export default function PlacedTileComponent({
   const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout>();
   const longPressTriggered = useRef<boolean>(false);
+  const shouldRemoveOnTouchEnd = useRef<boolean>(false);
 
   const handleTileClick = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
@@ -83,11 +84,12 @@ export default function PlacedTileComponent({
       longPressTimer.current = setTimeout(() => {
         setIsLongPress(true);
         longPressTriggered.current = true;
+        shouldRemoveOnTouchEnd.current = true;
         // Optional: Add haptic feedback if available
         if ("vibrate" in navigator) {
           navigator.vibrate(50);
         }
-        onRemove(tile.x, tile.y);
+        // Don't remove tile here - wait for touchEnd to prevent event bubbling
       }, TILE_EFFECTS.longPressDuration);
     },
     [tile.x, tile.y, onRemove]
@@ -105,8 +107,14 @@ export default function PlacedTileComponent({
       clearTimeout(longPressTimer.current);
     }
     
-    // If long press wasn't triggered, treat it as a tap
-    if (!longPressTriggered.current) {
+    // Handle long press removal after touch end to prevent event bubbling
+    if (shouldRemoveOnTouchEnd.current) {
+      // Use setTimeout to ensure touch end event is fully processed first
+      setTimeout(() => {
+        onRemove(tile.x, tile.y);
+      }, 0);
+    } else if (!longPressTriggered.current) {
+      // If long press wasn't triggered, treat it as a tap
       if (isAtCursor) {
         onToggleOrientation();
       } else {
@@ -117,7 +125,8 @@ export default function PlacedTileComponent({
     // Reset states
     setIsLongPress(false);
     longPressTriggered.current = false;
-  }, [tile.x, tile.y, onCursorMove, onToggleOrientation, isAtCursor]);
+    shouldRemoveOnTouchEnd.current = false;
+  }, [tile.x, tile.y, onRemove, onCursorMove, onToggleOrientation, isAtCursor]);
 
 
   const letterValue = useMemo(
